@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Border
+  - Obstacle
+  - Star
+  - Magnet
+  - MagnetPosition
+  - Heart
+  - Missle
+  - MagneticField
+  - ProjectileSharp
+  - AlienEnemy
+  - TimerBar
+  - Shield
+  - ShieldBarController
+  - BulletPickup
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - MagneticFieldLayer
+  - Water
+  - UI
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: IgnoreCollision
+    uniqueID: 4238670913
+    locked: 0
