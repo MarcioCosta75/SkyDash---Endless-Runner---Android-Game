@@ -8,6 +8,8 @@ using UnityEngine;
 public static class GameSettings
 {
     private const string TouchSensitivityKey = "touchSensitivity";
+    private const string MusicVolumeKey = "musicVolume";
+    private const string SfxVolumeKey = "sfxVolume";
 
     /// <summary>Slider range in the settings scene.</summary>
     public const float SliderMinimum = 0f;
@@ -45,6 +47,20 @@ public static class GameSettings
     public static void Save()
     {
         PlayerPrefs.Save();
+    }
+
+    /// <summary>Music level, 0 to 1.</summary>
+    public static float MusicVolume
+    {
+        get => Mathf.Clamp01(PlayerPrefs.GetFloat(MusicVolumeKey, 0.7f));
+        set => PlayerPrefs.SetFloat(MusicVolumeKey, Mathf.Clamp01(value));
+    }
+
+    /// <summary>Sound effect level, 0 to 1.</summary>
+    public static float SfxVolume
+    {
+        get => Mathf.Clamp01(PlayerPrefs.GetFloat(SfxVolumeKey, 0.8f));
+        set => PlayerPrefs.SetFloat(SfxVolumeKey, Mathf.Clamp01(value));
     }
 
     public static float SliderToMultiplier(float sliderValue)

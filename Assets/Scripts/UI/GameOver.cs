@@ -113,6 +113,10 @@ public class GameOver : MonoBehaviour
 
         if (deathSoundEffect != null)
         {
+            // 2D and mixed, like every other effect. This source sits on an
+            // object ten units from the camera on z.
+            deathSoundEffect.spatialBlend = 0f;
+            deathSoundEffect.volume = Mathf.Clamp01(GameSettings.SfxVolume);
             deathSoundEffect.Play();
         }
 

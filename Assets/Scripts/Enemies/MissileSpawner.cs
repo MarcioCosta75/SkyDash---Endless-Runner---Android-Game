@@ -98,6 +98,13 @@ public class MissileSpawner : MonoBehaviour
         health = GetComponent<EnemyHealth>();
         mainCamera = Camera.main;
 
+        if (audioSource != null)
+        {
+            // 2D: this object sits about ten units from the camera on z, and a
+            // 3D source there plays at roughly a tenth of its volume.
+            audioSource.spatialBlend = 0f;
+        }
+
         RememberFightingPosition();
     }
 
@@ -196,6 +203,7 @@ public class MissileSpawner : MonoBehaviour
         {
             audioSource.clip = activeSound;
             audioSource.loop = true;
+            audioSource.volume = Mathf.Clamp01(GameSettings.SfxVolume * 0.35f);
             audioSource.Play();
         }
 
@@ -300,9 +308,11 @@ public class MissileSpawner : MonoBehaviour
         // audible feedback for a hit that did not kill.
         if (collision.CompareTag("ProjectileSharp")
             && health != null && health.IsAlive
-            && audioSource != null && hitSound != null)
+            && hitSound != null)
         {
-            audioSource.PlayOneShot(hitSound);
+            // Through the shared player, so it does not fight the looping
+            // engine sound on this object's own source.
+            SoundPlayer.Play(hitSound, 0.5f);
         }
     }
 
@@ -324,7 +334,7 @@ public class MissileSpawner : MonoBehaviour
         // object and a disabled AudioSource cannot play.
         if (destructionSound != null)
         {
-            AudioSource.PlayClipAtPoint(destructionSound, transform.position);
+            SoundPlayer.PlayFlat(destructionSound, 1f);
         }
     }
 }

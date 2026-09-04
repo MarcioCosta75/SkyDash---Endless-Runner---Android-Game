@@ -32,7 +32,7 @@ public class AmmoPickup : MonoBehaviour
 
         if (pickupSound != null)
         {
-            AudioSource.PlayClipAtPoint(pickupSound, transform.position);
+            SoundPlayer.Play(pickupSound, 0.7f);
         }
 
         Destroy(gameObject);

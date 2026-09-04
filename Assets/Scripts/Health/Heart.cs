@@ -30,7 +30,7 @@ public class Heart : MonoBehaviour
 
         if (collisionSound != null)
         {
-            AudioSource.PlayClipAtPoint(collisionSound, transform.position);
+            SoundPlayer.Play(collisionSound, 0.8f);
         }
 
         Destroy(gameObject);

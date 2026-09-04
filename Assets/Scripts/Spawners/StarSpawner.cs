@@ -13,14 +13,10 @@ public class StarSpawner : FallingItemSpawner
 
     public void PlayCollectSound()
     {
-        // Played at a point rather than through a source on this object: this
-        // spawner is switched off at game over, and a disabled AudioSource
-        // cannot play, so the last star collected would be silent.
-        if (collectSound != null)
-        {
-            AudioSource.PlayClipAtPoint(collectSound, Camera.main != null
-                ? Camera.main.transform.position
-                : transform.position);
-        }
+        // Through the shared player, not a source on this object: this spawner
+        // is switched off at game over and a disabled AudioSource cannot play,
+        // so the last star of a run would be silent. Low in the mix, because
+        // it fires every few seconds for the whole run.
+        SoundPlayer.Play(collectSound, 0.5f);
     }
 }

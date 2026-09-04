@@ -12,6 +12,10 @@ public class BackgroundMusic : MonoBehaviour
     [Tooltip("Scenes whose load should start the music.")]
     [SerializeField]
     private string[] scenesWithMusic = { SceneNames.Game };
+    [Tooltip("Where the track sits in the mix, before the player's volume setting.")]
+    [Range(0f, 1f)]
+    [SerializeField]
+    private float mixLevel = 0.5f;
 
     private static BackgroundMusic instance;
 
@@ -27,6 +31,12 @@ public class BackgroundMusic : MonoBehaviour
 
         instance = this;
         audioSource = GetComponent<AudioSource>();
+
+        // 2D, so the track does not fade as the camera climbs away from this
+        // object, which never moves.
+        audioSource.spatialBlend = 0f;
+        ApplyVolume();
+
         DontDestroyOnLoad(gameObject);
 
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -74,6 +84,23 @@ public class BackgroundMusic : MonoBehaviour
         }
     }
 
+    /// <summary>Re-reads the volume setting. Call after changing it.</summary>
+    public static void RefreshVolume()
+    {
+        if (instance != null)
+        {
+            instance.ApplyVolume();
+        }
+    }
+
+    private void ApplyVolume()
+    {
+        if (audioSource != null)
+        {
+            audioSource.volume = Mathf.Clamp01(GameSettings.MusicVolume * mixLevel);
+        }
+    }
+
     public static void PlayMusic()
     {
         if (instance == null || instance.audioSource == null || instance.audioSource.isPlaying)
@@ -82,6 +109,7 @@ public class BackgroundMusic : MonoBehaviour
         }
 
         instance.audioSource.enabled = true;
+        instance.ApplyVolume();
         instance.audioSource.Play();
     }
 

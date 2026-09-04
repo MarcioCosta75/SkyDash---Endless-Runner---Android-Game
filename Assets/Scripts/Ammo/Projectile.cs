@@ -71,7 +71,7 @@ public class Projectile : MonoBehaviour
 
         if (activationSound != null)
         {
-            AudioSource.PlayClipAtPoint(activationSound, transform.position);
+            SoundPlayer.Play(activationSound, 0.45f);
         }
 
         UpdateProjectileDirection();
@@ -146,7 +146,7 @@ public class Projectile : MonoBehaviour
 
         if (destructionSound != null)
         {
-            AudioSource.PlayClipAtPoint(destructionSound, transform.position);
+            SoundPlayer.Play(destructionSound, 0.6f);
         }
 
         Destroy(gameObject);

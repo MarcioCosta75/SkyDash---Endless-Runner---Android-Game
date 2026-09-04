@@ -60,7 +60,7 @@ public class DamagingHazard : MonoBehaviour
 
         if (collisionSound != null)
         {
-            AudioSource.PlayClipAtPoint(collisionSound, transform.position);
+            SoundPlayer.Play(collisionSound, 0.85f);
         }
 
         Destroy(gameObject);
