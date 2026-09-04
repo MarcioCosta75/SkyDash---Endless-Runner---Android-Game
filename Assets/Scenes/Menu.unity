@@ -316,8 +316,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Welcome to SkyDash! Soar through space, dodge obstacles, and collect
-    treasures in this airborne adventure. \n\nHow far can you fly?"
+  m_text: "Drag anywhere to steer. Dodge the asteroids, collect the stars,
+    and shoot what gets in your way.
+
+How far can you fly?"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1203,6 +1205,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1381150669}
   - component: {fileID: 1381150668}
+  - component: {fileID: 395608001}
   m_Layer: 0
   m_Name: SceneManager
   m_TagString: Untagged
@@ -1237,6 +1240,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &395608001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1381150667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4b2b8f3a53241d5b2343fccfcb31242, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  screenHeight: 0.245
 --- !u!1 &1781211391
 GameObject:
   m_ObjectHideFlags: 0

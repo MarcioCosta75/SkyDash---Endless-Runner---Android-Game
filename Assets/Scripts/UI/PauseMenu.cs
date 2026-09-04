@@ -30,6 +30,27 @@ public class PauseMenu : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Pauses when the app is sent to the background. A phone call or a
+    /// notification pulled the player out of a run that carried on without
+    /// them, so they came back to a game already lost.
+    /// </summary>
+    private void OnApplicationPause(bool paused)
+    {
+        if (paused && pausingAllowed && !GameIsPaused)
+        {
+            Pause();
+        }
+    }
+
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        if (!hasFocus && pausingAllowed && !GameIsPaused)
+        {
+            Pause();
+        }
+    }
+
     public void OnPauseButtonClicked()
     {
         Toggle();
