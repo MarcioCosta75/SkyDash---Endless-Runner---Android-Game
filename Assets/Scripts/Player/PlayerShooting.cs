@@ -4,16 +4,16 @@ using TMPro;
 
 public class PlayerShooting : MonoBehaviour
 {
-    public GameObject projectilePrefab; // Prefab do projétil
-    public float projectileSpeed = 10f; // Velocidade do projétil
+    public GameObject projectilePrefab; // Prefab do projï¿½til
+    public float projectileSpeed = 10f; // Velocidade do projï¿½til
 
-    public int maxProjectiles = 15; // Número máximo de projéteis permitidos
-    public int currentProjectiles = 15; // Número atual de projéteis disponíveis
+    public int maxProjectiles = 15; // Nï¿½mero mï¿½ximo de projï¿½teis permitidos
+    public int currentProjectiles = 15; // Nï¿½mero atual de projï¿½teis disponï¿½veis
 
-    public TextMeshProUGUI bulletsText; // Referência ao componente TextMeshProUGUI para exibir o número de balas
-    public Button shootButton; // Referência ao botão de disparo
+    public TextMeshProUGUI bulletsText; // Referï¿½ncia ao componente TextMeshProUGUI para exibir o nï¿½mero de balas
+    public Button shootButton; // Referï¿½ncia ao botï¿½o de disparo
 
-    public GameObject alienEnemy; // Referência ao objeto AlienEnemy
+    public GameObject alienEnemy; // Referï¿½ncia ao objeto AlienEnemy
 
     private bool canShoot = true; // Indica se o jogador pode disparar
 
@@ -21,7 +21,7 @@ public class PlayerShooting : MonoBehaviour
     {
         currentProjectiles = maxProjectiles;
         UpdateBulletsText();
-        // Resto da inicialização...
+        // Resto da inicializaï¿½ï¿½o...
 
         if (shootButton != null)
         {
@@ -47,17 +47,17 @@ public class PlayerShooting : MonoBehaviour
     {
         if (projectilePrefab != null && alienEnemy != null)
         {
-            // Cria o projétil na posição atual do jogador
+            // Cria o projï¿½til na posiï¿½ï¿½o atual do jogador
             GameObject projectile = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
 
-            // Obtém a direção do projétil em relação ao AlienEnemy
+            // Obtï¿½m a direï¿½ï¿½o do projï¿½til em relaï¿½ï¿½o ao AlienEnemy
             Vector3 direction = (alienEnemy.transform.position - projectile.transform.position).normalized;
 
-            // Obtém o componente Rigidbody2D do projétil
+            // Obtï¿½m o componente Rigidbody2D do projï¿½til
             Rigidbody2D projectileRigidbody = projectile.GetComponent<Rigidbody2D>();
 
-            // Aplica uma força para mover o projétil na direção calculada
-            projectileRigidbody.velocity = direction * projectileSpeed;
+            // Aplica uma forï¿½a para mover o projï¿½til na direï¿½ï¿½o calculada
+            projectileRigidbody.linearVelocity = direction * projectileSpeed;
         }
     }
 

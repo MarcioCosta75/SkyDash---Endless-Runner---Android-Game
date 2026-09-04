@@ -49,7 +49,7 @@ public class ExampleShipControl : MonoBehaviour {
 		}	
 		if (Input.GetKey(KeyCode.C)) {
 			GetComponent<Rigidbody2D>().angularVelocity = Mathf.Lerp(GetComponent<Rigidbody2D>().angularVelocity, 0, rotation_speed * 0.06f * Time.deltaTime);
-			GetComponent<Rigidbody2D>().velocity = Vector2.Lerp(GetComponent<Rigidbody2D>().velocity, Vector2.zero, acceleration_amount * 0.06f * Time.deltaTime);
+			GetComponent<Rigidbody2D>().linearVelocity = Vector2.Lerp(GetComponent<Rigidbody2D>().linearVelocity, Vector2.zero, acceleration_amount * 0.06f * Time.deltaTime);
 		}	
 		
 		

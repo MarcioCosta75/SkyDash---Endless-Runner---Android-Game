@@ -21,21 +21,21 @@ public class HeartSpawner : MonoBehaviour
         Vector3 cameraTopRight = mainCamera.ViewportToWorldPoint(new Vector3(1, 1, mainCamera.nearClipPlane));
 
         float randomX = Random.Range(cameraBottomLeft.x, cameraTopRight.x);
-        float randomY = cameraTopRight.y; // Sempre acima da área visível da câmera
-        float randomZ = transform.position.z; // Manter a posição Z do spawner
+        float randomY = cameraTopRight.y; // Sempre acima da ï¿½rea visï¿½vel da cï¿½mera
+        float randomZ = transform.position.z; // Manter a posiï¿½ï¿½o Z do spawner
 
         Vector3 spawnPosition = new Vector3(randomX, randomY, randomZ);
 
         GameObject heart = Instantiate(heartPrefab, spawnPosition, Quaternion.identity);
-        // Certifique-se de adicionar o componente HeartController ao heartPrefab para lidar com a lógica de coleta e restauração de vida
+        // Certifique-se de adicionar o componente HeartController ao heartPrefab para lidar com a lï¿½gica de coleta e restauraï¿½ï¿½o de vida
 
-        // Se desejar, você pode definir outras propriedades ou comportamentos para o heart aqui
+        // Se desejar, vocï¿½ pode definir outras propriedades ou comportamentos para o heart aqui
 
         Rigidbody2D heartRigidbody = heart.GetComponent<Rigidbody2D>();
         if (heartRigidbody != null)
         {
             heartRigidbody.gravityScale = 0f;
-            heartRigidbody.velocity = new Vector2(0f, -fallSpeed);
+            heartRigidbody.linearVelocity = new Vector2(0f, -fallSpeed);
         }
     }
 }

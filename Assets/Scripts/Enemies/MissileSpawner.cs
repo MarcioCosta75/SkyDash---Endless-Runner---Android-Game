@@ -8,18 +8,18 @@ public class MissileSpawner : MonoBehaviour
     public float spawnOffsetY;
     public float movementSpeed = 3f; // Velocidade de movimento do spawner
 
-    public int projectileSharpHitsToDestroy = 3; // Número de vezes que o MissileSpawner pode ser atingido antes de ser destruído
+    public int projectileSharpHitsToDestroy = 3; // Nï¿½mero de vezes que o MissileSpawner pode ser atingido antes de ser destruï¿½do
 
-    public AudioClip activeSound; // Som a ser reproduzido quando o MissileSpawner está ativo
-    public GameObject explosionEffectPrefab; // Prefab da animação de explosão
+    public AudioClip activeSound; // Som a ser reproduzido quando o MissileSpawner estï¿½ ativo
+    public GameObject explosionEffectPrefab; // Prefab da animaï¿½ï¿½o de explosï¿½o
 
     private float direction = 1f;
     private int projectileSharpHits = 0; // Contador de vezes que o MissileSpawner foi atingido
     private Camera mainCamera;
     private AudioSource audioSource;
-    private bool isActive = true; // Indica se o MissileSpawner está ativo
+    private bool isActive = true; // Indica se o MissileSpawner estï¿½ ativo
 
-    public AudioClip destructionSound; // Som a ser reproduzido quando o MissileSpawner é destruído
+    public AudioClip destructionSound; // Som a ser reproduzido quando o MissileSpawner ï¿½ destruï¿½do
 
     public AudioClip hitSound;
 
@@ -48,7 +48,7 @@ public class MissileSpawner : MonoBehaviour
             Quaternion spawnRotation = Quaternion.identity;
             GameObject missile = Instantiate(missilePrefab, spawnPosition, spawnRotation);
             Rigidbody2D missileRigidbody = missile.GetComponent<Rigidbody2D>();
-            missileRigidbody.velocity = Vector2.down * spawnSpeed;
+            missileRigidbody.linearVelocity = Vector2.down * spawnSpeed;
         }
     }
 
@@ -60,16 +60,16 @@ public class MissileSpawner : MonoBehaviour
         // Movimenta o spawner no eixo X
         transform.Translate(Vector3.right * direction * movementSpeed * Time.deltaTime);
 
-        // Converte a posição do spawner em coordenadas de viewport
+        // Converte a posiï¿½ï¿½o do spawner em coordenadas de viewport
         Vector3 viewportPosition = mainCamera.WorldToViewportPoint(transform.position);
 
         // Limita o movimento do spawner dentro dos limites da viewport
         viewportPosition.x = Mathf.Clamp01(viewportPosition.x);
 
-        // Converte de volta para a posição do mundo
+        // Converte de volta para a posiï¿½ï¿½o do mundo
         transform.position = mainCamera.ViewportToWorldPoint(viewportPosition);
 
-        // Verifica se o spawner está além dos limites da tela e muda a direção
+        // Verifica se o spawner estï¿½ alï¿½m dos limites da tela e muda a direï¿½ï¿½o
         if (viewportPosition.x <= 0f || viewportPosition.x >= 1f)
         {
             direction *= -1f;
@@ -96,7 +96,7 @@ public class MissileSpawner : MonoBehaviour
     {
         audioSource.Stop();
         Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity);
-        gameObject.SetActive(false); // Desativa o MissileSpawner em vez de destruí-lo
+        gameObject.SetActive(false); // Desativa o MissileSpawner em vez de destruï¿½-lo
         audioSource.clip = destructionSound;
         audioSource.Play();
         isActive = false; // Define o MissileSpawner como inativo

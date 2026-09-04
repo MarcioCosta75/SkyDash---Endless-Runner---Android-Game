@@ -21,21 +21,21 @@ public class ShieldSpawner : MonoBehaviour
         Vector3 cameraTopRight = mainCamera.ViewportToWorldPoint(new Vector3(1, 1, mainCamera.nearClipPlane));
 
         float randomX = Random.Range(cameraBottomLeft.x, cameraTopRight.x);
-        float randomY = cameraTopRight.y; // Sempre acima da área visível da câmera
-        float randomZ = transform.position.z; // Manter a posição Z do spawner
+        float randomY = cameraTopRight.y; // Sempre acima da ï¿½rea visï¿½vel da cï¿½mera
+        float randomZ = transform.position.z; // Manter a posiï¿½ï¿½o Z do spawner
 
         Vector3 spawnPosition = new Vector3(randomX, randomY, randomZ);
 
         GameObject shield = Instantiate(shieldPrefab, spawnPosition, Quaternion.identity);
-        // Certifique-se de adicionar o componente ShieldController ao shieldPrefab para lidar com a lógica de coleta e ativação do escudo
+        // Certifique-se de adicionar o componente ShieldController ao shieldPrefab para lidar com a lï¿½gica de coleta e ativaï¿½ï¿½o do escudo
 
-        // Se desejar, você pode definir outras propriedades ou comportamentos para o shield aqui
+        // Se desejar, vocï¿½ pode definir outras propriedades ou comportamentos para o shield aqui
 
         Rigidbody2D shieldRigidbody = shield.GetComponent<Rigidbody2D>();
         if (shieldRigidbody != null)
         {
             shieldRigidbody.gravityScale = 0f;
-            shieldRigidbody.velocity = new Vector2(0f, -fallSpeed);
+            shieldRigidbody.linearVelocity = new Vector2(0f, -fallSpeed);
         }
     }
 }
