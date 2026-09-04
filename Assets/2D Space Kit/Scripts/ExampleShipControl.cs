@@ -17,7 +17,11 @@ public class ExampleShipControl : MonoBehaviour {
 	
 	
 		if (Input.GetKeyDown(KeyCode.Escape))
-			Screen.lockCursor = !Screen.lockCursor;	
+			{
+				Cursor.lockState = Cursor.lockState == CursorLockMode.Locked
+					? CursorLockMode.None : CursorLockMode.Locked;
+				Cursor.visible = Cursor.lockState != CursorLockMode.Locked;
+			}
 	
 	
 	
