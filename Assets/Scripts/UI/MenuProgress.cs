@@ -14,7 +14,6 @@ using UnityEngine;
 public class MenuProgress : MonoBehaviour
 {
     private const string HighscoreKey = "highscore_metres";
-    private const string TotalStarCounterKey = "totalStarCounter";
 
     [Tooltip("Optional. Left empty, a label is created and placed automatically.")]
     [SerializeField]
@@ -38,7 +37,7 @@ public class MenuProgress : MonoBehaviour
     private string Describe()
     {
         float best = PlayerPrefs.GetFloat(HighscoreKey, 0f);
-        int stars = PlayerPrefs.GetInt(TotalStarCounterKey, 0);
+        int stars = PlayerUpgrades.TotalStars;
 
         // Nothing to boast about yet, so say nothing rather than showing zeroes.
         if (best <= 0f && stars <= 0)
@@ -46,8 +45,25 @@ public class MenuProgress : MonoBehaviour
             return string.Empty;
         }
 
-        string bestPart = "Best  " + Mathf.FloorToInt(best) + "m";
-        return stars > 0 ? bestPart + "      Stars  " + stars : bestPart;
+        string line = "Best  " + Mathf.FloorToInt(best) + "m";
+        if (stars > 0)
+        {
+            line += "      Stars  " + stars;
+        }
+
+        // What the next milestone gives, and how far away it is. This is the
+        // reason to keep collecting stars on a run that is already lost.
+        PlayerUpgrades.Milestone next;
+        if (PlayerUpgrades.TryGetNext(out next))
+        {
+            line += "\n" + next.Description + " in " + (next.Stars - stars) + " stars";
+        }
+        else
+        {
+            line += "\nEverything unlocked";
+        }
+
+        return line;
     }
 
     private TextMeshProUGUI Build()
@@ -78,7 +94,7 @@ public class MenuProgress : MonoBehaviour
         rect.anchorMin = new Vector2(0.5f, screenHeight);
         rect.anchorMax = new Vector2(0.5f, screenHeight);
         rect.pivot = new Vector2(0.5f, 0.5f);
-        rect.sizeDelta = new Vector2(1000f, 70f);
+        rect.sizeDelta = new Vector2(1000f, 140f);
         rect.anchoredPosition = Vector2.zero;
 
         return text;

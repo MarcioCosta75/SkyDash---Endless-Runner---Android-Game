@@ -44,13 +44,91 @@ public class Health : MonoBehaviour
     {
         // A max of zero would mean a player that can never be hurt and never
         // dies, so the run would have no end.
-        maxHealth = Mathf.Max(1, maxHealth);
+        maxHealth = Mathf.Max(1, maxHealth) + PlayerUpgrades.ExtraHearts;
         health = maxHealth;
     }
 
     private void Start()
     {
+        EnsureHeartSlots();
         RefreshHearts();
+    }
+
+    /// <summary>
+    /// Builds any heart icons the upgrades have earned beyond the three the
+    /// scene provides, then lays the row out so it still fits.
+    ///
+    /// The row only has room for three at their authored size, so adding a
+    /// fourth or fifth means tightening the spacing and shrinking them a
+    /// little. Nothing moves while the player has the base three.
+    /// </summary>
+    private void EnsureHeartSlots()
+    {
+        if (hearts == null || hearts.Length == 0 || maxHealth <= hearts.Length)
+        {
+            return;
+        }
+
+        Image template = hearts[hearts.Length - 1];
+        if (template == null)
+        {
+            return;
+        }
+
+        Image[] grown = new Image[maxHealth];
+        for (int i = 0; i < hearts.Length; i++)
+        {
+            grown[i] = hearts[i];
+        }
+
+        for (int i = hearts.Length; i < maxHealth; i++)
+        {
+            Image copy = Instantiate(template, template.transform.parent);
+            copy.name = "Heart (" + i + ")";
+            grown[i] = copy;
+        }
+
+        hearts = grown;
+        LayOutHearts();
+    }
+
+    /// <summary>
+    /// Spreads the row evenly across the space the original three occupied,
+    /// scaling the icons down if that is what it takes to fit.
+    /// </summary>
+    private void LayOutHearts()
+    {
+        RectTransform first = hearts[0] != null ? hearts[0].rectTransform : null;
+        if (first == null)
+        {
+            return;
+        }
+
+        float authoredSize = first.sizeDelta.x;
+        float rowStart = first.anchoredPosition.x - authoredSize * 0.5f;
+
+        // The three authored hearts span this much, and the row has to stay
+        // inside it or it runs into the score.
+        float rowWidth = authoredSize * 3f + 196f * 2f;
+
+        float step = rowWidth / hearts.Length;
+        float size = Mathf.Min(authoredSize, step * 0.95f);
+
+        for (int i = 0; i < hearts.Length; i++)
+        {
+            if (hearts[i] == null)
+            {
+                continue;
+            }
+
+            RectTransform rect = hearts[i].rectTransform;
+            rect.anchorMin = first.anchorMin;
+            rect.anchorMax = first.anchorMax;
+            rect.pivot = first.pivot;
+            rect.sizeDelta = new Vector2(size, size);
+            rect.anchoredPosition = new Vector2(rowStart + step * (i + 0.5f),
+                                                first.anchoredPosition.y);
+        }
     }
 
     public void TakeDamage(int amount = 1)

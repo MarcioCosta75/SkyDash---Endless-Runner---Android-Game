@@ -98,6 +98,7 @@ public class PlayerController : MonoBehaviour
 
         // Set in the settings scene, stored on the device.
         sensitivity = GameSettings.TouchSensitivity;
+        magnetDuration += PlayerUpgrades.ExtraMagnetSeconds;
 
         holdLeft = EnsureHoldButton(buttonLeft);
         holdRight = EnsureHoldButton(buttonRight);

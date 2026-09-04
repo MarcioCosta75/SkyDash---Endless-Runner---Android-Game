@@ -35,6 +35,7 @@ public class PlayerShooting : MonoBehaviour
 
     private void Start()
     {
+        maxProjectiles += PlayerUpgrades.ExtraAmmo;
         currentProjectiles = maxProjectiles;
         UpdateBulletsText();
 

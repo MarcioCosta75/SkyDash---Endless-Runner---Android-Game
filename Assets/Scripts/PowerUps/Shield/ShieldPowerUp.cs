@@ -44,6 +44,8 @@ public class ShieldPowerUp : MonoBehaviour
             return;
         }
 
+        float duration = magneticFieldDuration + PlayerUpgrades.ExtraShieldSeconds;
+
         GameObject magneticField = Instantiate(magneticFieldPrefab, player.transform.position, Quaternion.identity);
         magneticField.transform.SetParent(player.transform);
 
@@ -51,10 +53,10 @@ public class ShieldPowerUp : MonoBehaviour
         BlinkEffect blink = magneticField.GetComponentInChildren<BlinkEffect>();
         if (blink != null)
         {
-            blink.BeginFor(magneticFieldDuration);
+            blink.BeginFor(duration);
         }
 
-        Destroy(magneticField, magneticFieldDuration);
-        ShieldActivated?.Invoke(magneticFieldDuration);
+        Destroy(magneticField, duration);
+        ShieldActivated?.Invoke(duration);
     }
 }
