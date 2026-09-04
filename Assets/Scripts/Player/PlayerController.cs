@@ -4,10 +4,10 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// Steers the ship sideways and owns the magnet power-up timer.
+/// Steers the astronaut sideways and owns the magnet power-up timer.
 ///
 /// There are two ways to steer, and both are always available:
-/// dragging a finger anywhere on the play area moves the ship by the same
+/// dragging a finger anywhere on the play area moves the astronaut by the same
 /// distance the finger travelled, and holding the left or right button moves
 /// it at a steady speed. Holding matters: Unity's Button only fires on
 /// release, so the old one-tap-one-step scheme meant tapping repeatedly to
@@ -21,7 +21,7 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Speed while a movement button is held, in world units per second.")]
     [SerializeField]
     private float buttonMoveSpeed = 7f;
-    [Tooltip("How far the ship travels per unit of finger travel. 1 is one to one.")]
+    [Tooltip("How far the astronaut travels per unit of finger travel. 1 is one to one.")]
     [SerializeField]
     private float dragSensitivity = 1.25f;
     [Tooltip("Safety limit on drag speed, in world units per second.")]
@@ -29,7 +29,7 @@ public class PlayerController : MonoBehaviour
     private float maxDragSpeed = 24f;
 
     [Header("Feel")]
-    [Tooltip("Degrees the ship tilts into a turn. 0 turns tilting off.")]
+    [Tooltip("Degrees the astronaut tilts into a turn. 0 turns tilting off.")]
     [SerializeField]
     private float bankAngle = 10f;
     [Tooltip("How quickly the tilt follows the movement.")]
@@ -195,7 +195,7 @@ public class PlayerController : MonoBehaviour
         float worldPerPixel = ViewWidth() / Mathf.Max(1, Screen.width);
         float distance = deltaPixels * worldPerPixel * dragSensitivity * sensitivity;
 
-        // Cap it so a flick cannot jump the ship straight through an obstacle.
+        // Cap it so a flick cannot jump the astronaut straight through an obstacle.
         float limit = maxDragSpeed * Time.deltaTime;
         distance = Mathf.Clamp(distance, -limit, limit);
 
@@ -290,7 +290,7 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Leans the ship into a turn and levels it out again. Reads as weight,
+    /// Leans the astronaut into a turn and levels out again. Reads as weight,
     /// and shows the player that the input registered.
     /// </summary>
     private void UpdateBank(float distanceThisFrame)

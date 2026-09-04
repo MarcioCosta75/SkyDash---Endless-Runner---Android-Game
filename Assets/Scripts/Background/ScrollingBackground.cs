@@ -16,6 +16,9 @@ public class ScrollingBackground : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField]
     private float parallaxFactor = 0.22f;
+    [Tooltip("How far below the camera the artwork should reach at startup.")]
+    [SerializeField]
+    private float coverBelowCamera = 25f;
 
     private Camera mainCamera;
     private Transform[] strips;
@@ -61,6 +64,56 @@ public class ScrollingBackground : MonoBehaviour
                 "ScrollingBackground: the strips are not spread out vertically, " +
                 "so the background cannot loop. Disabling.", this);
             enabled = false;
+            return;
+        }
+
+        AlignToCamera();
+    }
+
+    /// <summary>
+    /// Slides the whole set down so the artwork already covers the camera on
+    /// the first frame. The planets were authored starting 16 units above the
+    /// opening view, which left the sky empty for the first few seconds.
+    /// </summary>
+    private void AlignToCamera()
+    {
+        if (mainCamera == null)
+        {
+            return;
+        }
+
+        Bounds painted = default;
+        bool any = false;
+
+        for (int i = 0; i < strips.Length; i++)
+        {
+            Renderer[] renderers = strips[i].GetComponentsInChildren<Renderer>();
+            for (int r = 0; r < renderers.Length; r++)
+            {
+                if (!any)
+                {
+                    painted = renderers[r].bounds;
+                    any = true;
+                }
+                else
+                {
+                    painted.Encapsulate(renderers[r].bounds);
+                }
+            }
+        }
+
+        if (!any)
+        {
+            return;
+        }
+
+        float cameraBottom = mainCamera.transform.position.y - mainCamera.orthographicSize;
+        float wantedLowest = cameraBottom - coverBelowCamera;
+
+        if (painted.min.y > wantedLowest)
+        {
+            float shift = painted.min.y - wantedLowest;
+            transform.position -= new Vector3(0f, shift, 0f);
         }
     }
 

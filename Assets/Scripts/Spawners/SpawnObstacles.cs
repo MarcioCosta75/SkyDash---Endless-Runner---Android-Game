@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Places obstacles in rows above the screen, always leaving one gap the ship
+/// Places obstacles in rows above the screen, always leaving one gap the astronaut
 /// can fit through.
 ///
 /// The old version scattered each obstacle by up to 3.4 units vertically. That
@@ -38,7 +38,7 @@ public class SpawnObstacles : MonoBehaviour
     private float intervalAtMaxDifficulty = 0.62f;
 
     [Header("Fairness")]
-    [Tooltip("Width of the guaranteed gap, in world units. The ship is about 0.8 wide.")]
+    [Tooltip("Width of the guaranteed gap, in world units. The astronaut is about 0.8 wide.")]
     [SerializeField]
     private float gapWidth = 1.8f;
     [Tooltip("Space each obstacle needs, in world units.")]
@@ -64,9 +64,9 @@ public class SpawnObstacles : MonoBehaviour
     [SerializeField]
     private bool randomiseRotation = true;
 
-    [Tooltip("Assumed ship speed, used to keep rows far enough apart to be fair.")]
+    [Tooltip("Assumed astronaut speed, used to keep rows far enough apart to be fair.")]
     [SerializeField]
-    private float shipSpeedEstimate = 7f;
+    private float astronautSpeedEstimate = 7f;
 
     private ScoreManager scoreManager;
     private float spawnTime;
@@ -98,8 +98,8 @@ public class SpawnObstacles : MonoBehaviour
 
         float interval = Random.Range(low, high) * scale;
 
-        // Keep enough time between rows for the ship to cross the gap shift.
-        float floorInterval = maxGapShift / Mathf.Max(1f, shipSpeedEstimate) / 0.8f;
+        // Keep enough time between rows for the astronaut to cross the gap shift.
+        float floorInterval = maxGapShift / Mathf.Max(1f, astronautSpeedEstimate) / 0.8f;
         spawnTime = Time.time + Mathf.Max(floorInterval, interval);
     }
 
@@ -143,7 +143,7 @@ public class SpawnObstacles : MonoBehaviour
     }
 
     /// <summary>
-    /// Nudges the gap, never further than the ship can travel between rows.
+    /// Nudges the gap, never further than the astronaut can travel between rows.
     /// </summary>
     private void MoveGap()
     {

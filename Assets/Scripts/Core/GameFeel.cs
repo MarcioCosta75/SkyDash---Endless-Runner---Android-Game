@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// The reactions that tell the player what just happened: the camera kicks on
-/// a hit, the screen flashes, the ship blinks while it cannot be hurt, and a
+/// a hit, the screen flashes, the astronaut blinks while they cannot be hurt, and a
 /// green pulse marks a heart pickup.
 ///
 /// It finds what it needs and builds the flash overlay itself, so it works
@@ -29,7 +29,7 @@ public class GameFeel : MonoBehaviour
     [SerializeField]
     private float flashDuration = 0.4f;
 
-    [Header("Ship blink")]
+    [Header("Astronaut blink")]
     [Tooltip("Seconds between blinks while invulnerable.")]
     [SerializeField]
     private float blinkInterval = 0.12f;

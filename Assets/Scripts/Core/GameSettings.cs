@@ -20,7 +20,7 @@ public static class GameSettings
     public const float DefaultSliderValue = 5f;
 
     /// <summary>
-    /// How far one button press moves the ship, as a multiplier of the value
+    /// How far one button press moves the astronaut, as a multiplier of the value
     /// set on the player. 1 is the tuned default.
     /// </summary>
     public static float TouchSensitivity
