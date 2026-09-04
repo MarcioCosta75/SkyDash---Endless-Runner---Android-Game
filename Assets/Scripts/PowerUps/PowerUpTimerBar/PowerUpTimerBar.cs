@@ -22,17 +22,13 @@ public abstract class PowerUpTimerBar : MonoBehaviour
 
     protected virtual void Awake()
     {
+        ResetBar();
         Subscribe();
     }
 
     protected virtual void OnDestroy()
     {
         Unsubscribe();
-    }
-
-    private void Start()
-    {
-        ResetBar();
     }
 
     protected abstract void Subscribe();

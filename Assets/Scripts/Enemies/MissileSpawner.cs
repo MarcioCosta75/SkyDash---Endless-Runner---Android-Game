@@ -2,9 +2,11 @@ using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// The alien enemy: drifts across the top of the screen dropping missiles,
-/// and breaks after enough hits.
+/// The alien enemy: drifts across the top of the screen dropping missiles.
+/// Hit points live in <see cref="EnemyHealth"/>, which is the single place
+/// that decides when the enemy dies; this script reacts to that.
 /// </summary>
+[RequireComponent(typeof(EnemyHealth))]
 public class MissileSpawner : MonoBehaviour
 {
     [Header("Missiles")]
@@ -25,10 +27,6 @@ public class MissileSpawner : MonoBehaviour
     [SerializeField]
     private float movementSpeed = 0.5f;
 
-    [Header("Damage")]
-    [SerializeField]
-    private int projectileSharpHitsToDestroy = 10;
-
     [Header("Audio and effects")]
     [SerializeField]
     private AudioClip activeSound;
@@ -40,20 +38,24 @@ public class MissileSpawner : MonoBehaviour
     private GameObject explosionEffectPrefab;
 
     private float direction = 1f;
-    private int projectileSharpHits;
     private Camera mainCamera;
     private AudioSource audioSource;
+    private EnemyHealth health;
     private Coroutine spawnRoutine;
 
     private void Awake()
     {
         audioSource = GetComponent<AudioSource>();
+        health = GetComponent<EnemyHealth>();
         mainCamera = Camera.main;
     }
 
     private void OnEnable()
     {
-        projectileSharpHits = 0;
+        if (health != null)
+        {
+            health.Died += OnDied;
+        }
 
         if (audioSource != null && activeSound != null)
         {
@@ -67,6 +69,11 @@ public class MissileSpawner : MonoBehaviour
 
     private void OnDisable()
     {
+        if (health != null)
+        {
+            health.Died -= OnDied;
+        }
+
         if (spawnRoutine != null)
         {
             StopCoroutine(spawnRoutine);
@@ -136,36 +143,28 @@ public class MissileSpawner : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (!collision.CompareTag("ProjectileSharp"))
-        {
-            return;
-        }
-
-        projectileSharpHits++;
-
-        if (projectileSharpHits >= projectileSharpHitsToDestroy)
-        {
-            DestroySpawner();
-        }
-        else if (audioSource != null && hitSound != null)
+        // Damage is applied by the projectile itself. This is only the
+        // audible feedback for a hit that did not kill.
+        if (collision.CompareTag("ProjectileSharp")
+            && health != null && health.IsAlive
+            && audioSource != null && hitSound != null)
         {
             audioSource.PlayOneShot(hitSound);
         }
     }
 
-    private void DestroySpawner()
+    private void OnDied()
     {
         if (explosionEffectPrefab != null)
         {
             Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity);
         }
 
-        // Played at a point, because a disabled object cannot play audio.
+        // Played at a point, because EnemyHealth is about to disable this
+        // object and a disabled AudioSource cannot play.
         if (destructionSound != null)
         {
             AudioSource.PlayClipAtPoint(destructionSound, transform.position);
         }
-
-        gameObject.SetActive(false);
     }
 }
