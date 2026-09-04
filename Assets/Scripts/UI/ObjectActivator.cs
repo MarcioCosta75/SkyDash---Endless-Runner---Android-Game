@@ -27,6 +27,17 @@ public class ObjectActivator : MonoBehaviour
 
     private Coroutine showRoutine;
 
+    private void Awake()
+    {
+        // Hidden here rather than in Start: Start order between this and
+        // ScoreManager is undefined, and ScoreManager.Start raises the first
+        // LevelChanged. Hiding later would swallow the level 1 banner.
+        if (objectToActivate != null)
+        {
+            objectToActivate.SetActive(false);
+        }
+    }
+
     private void OnEnable()
     {
         if (showOnLevelChange)
@@ -47,8 +58,6 @@ public class ObjectActivator : MonoBehaviour
             enabled = false;
             return;
         }
-
-        objectToActivate.SetActive(false);
 
         if (!showOnLevelChange)
         {

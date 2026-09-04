@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 2900968864370682586}
   - component: {fileID: 8619999325644399640}
   - component: {fileID: 3741658114297988837}
-  - component: {fileID: 3706000075553289954}
   - component: {fileID: -6931472514793066171}
   - component: {fileID: -9149980900204488905}
   m_Layer: 0
@@ -266,23 +265,6 @@ PolygonCollider2D:
       - {x: 0.14999999, y: -2.29}
       - {x: -0.13, y: -2.3}
       - {x: -0.14, y: -2.29}
---- !u!114 &3706000075553289954
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 28097635837780792}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 504c1d14eba90f545a1e4513318f9555, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  collisionSound: {fileID: 8300000, guid: 4f37b87488b23da4b8c1053f056f2aa2, type: 3}
-  particleEffect: {fileID: 100002, guid: cafecd3fc3b761c45bb1553f35cf5c96, type: 3}
-  fieldSprite: {fileID: 8619999325644399640}
-  blinkInterval: 0.5
-  blinkDuration: 2
 --- !u!114 &-6931472514793066171
 MonoBehaviour:
   m_ObjectHideFlags: 0

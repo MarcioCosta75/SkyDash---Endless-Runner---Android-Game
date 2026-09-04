@@ -31,6 +31,15 @@ public abstract class PowerUpTimerBar : MonoBehaviour
         Unsubscribe();
     }
 
+    private void OnDisable()
+    {
+        // Disabling this object stops the countdown coroutine, which would
+        // otherwise leave the holder switched on. The holder is a child of the
+        // Canvas, so it stays visible even when this object is gone.
+        countdown = null;
+        ResetBar();
+    }
+
     protected abstract void Subscribe();
     protected abstract void Unsubscribe();
 

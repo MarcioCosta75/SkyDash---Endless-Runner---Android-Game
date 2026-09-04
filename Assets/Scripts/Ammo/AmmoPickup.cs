@@ -3,6 +3,7 @@ using UnityEngine;
 /// <summary>Refills the player's ammo.</summary>
 public class AmmoPickup : MonoBehaviour
 {
+    private bool used;
     [SerializeField]
     private int ammoAmount = 2;
     [SerializeField]
@@ -10,7 +11,7 @@ public class AmmoPickup : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (!collision.CompareTag("Player"))
+        if (used || !collision.CompareTag("Player"))
         {
             return;
         }
@@ -26,6 +27,7 @@ public class AmmoPickup : MonoBehaviour
             return;
         }
 
+        used = true;
         playerShooting.AcquireProjectiles(ammoAmount);
 
         if (pickupSound != null)

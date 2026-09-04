@@ -35,9 +35,16 @@ public static class GameSettings
                            SliderMinimum, SliderMaximum);
         set
         {
+            // No Save here: this is written on every frame of a slider drag,
+            // and PlayerPrefs.Save blocks on a disk write.
             PlayerPrefs.SetFloat(TouchSensitivityKey, Mathf.Clamp(value, SliderMinimum, SliderMaximum));
-            PlayerPrefs.Save();
         }
+    }
+
+    /// <summary>Flushes pending changes to disk. Call when leaving settings.</summary>
+    public static void Save()
+    {
+        PlayerPrefs.Save();
     }
 
     public static float SliderToMultiplier(float sliderValue)

@@ -12725,7 +12725,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3871145421728909487, guid: c12ca985009ea3446b0dfccda764110d, type: 3}
       propertyPath: moveSpeed
-      value: 4
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3871145421728909487, guid: c12ca985009ea3446b0dfccda764110d, type: 3}
       propertyPath: buttonLeft

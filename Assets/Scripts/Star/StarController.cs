@@ -17,6 +17,8 @@ public class StarController : MonoBehaviour
     private static ScoreManager cachedScoreManager;
     private static StarSpawner cachedSpawner;
 
+    private bool collected;
+
     private void Update()
     {
         PlayerController player = PlayerController.Instance;
@@ -25,16 +27,27 @@ public class StarController : MonoBehaviour
             return;
         }
 
-        Vector3 target = player.Position;
-        float distance = Vector3.Distance(target, transform.position);
+        // The player sits on a different z plane to the falling items, so
+        // range and movement are measured on the screen plane only. Using a
+        // 3D distance here would never be under the range.
+        Vector3 position = transform.position;
+        Vector2 target = player.Position;
+        Vector2 flat = new Vector2(position.x, position.y);
+
+        float distance = Vector2.Distance(target, flat);
         if (distance > attractionRange)
         {
             return;
         }
 
         // Closer stars accelerate, which reads as a magnet rather than a tow.
-        float pull = attractionSpeed * Mathf.Clamp01(1f - distance / attractionRange) + attractionSpeed * 0.25f;
-        transform.position = Vector3.MoveTowards(transform.position, target, pull * Time.deltaTime);
+        float pull = attractionSpeed * Mathf.Clamp01(1f - distance / attractionRange)
+                     + attractionSpeed * 0.25f;
+
+        Vector2 moved = Vector2.MoveTowards(flat, target, pull * Time.deltaTime);
+
+        // z is left alone so the star keeps its render depth.
+        transform.position = new Vector3(moved.x, moved.y, position.z);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -47,6 +60,14 @@ public class StarController : MonoBehaviour
 
     private void Collect()
     {
+        // The player has three trigger colliders, so this can fire twice.
+        if (collected)
+        {
+            return;
+        }
+
+        collected = true;
+
         if (cachedScoreManager == null)
         {
             cachedScoreManager = FindAnyObjectByType<ScoreManager>();

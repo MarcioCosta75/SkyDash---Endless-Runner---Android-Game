@@ -5,22 +5,16 @@ using UnityEngine.UI;
 /// <summary>
 /// Moves the ship sideways between the screen edges and owns the magnet
 /// power-up timer. The two on-screen buttons nudge a target position and the
-/// ship slides towards it at a constant speed.
-///
-/// The sideways position is applied in LateUpdate and kept in a field rather
-/// than read back from the transform. The Float animation on this object
-/// writes the whole local position every frame, after Update, so anything
-/// written earlier is overwritten and anything read back is the animation's
-/// value rather than ours.
+/// ship slides towards it.
 /// </summary>
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
     [SerializeField]
     private GameObject characterObject;
-    [Tooltip("Sideways speed in world units per second.")]
+    [Tooltip("Speed factor. Sideways speed is this times movementDistance.")]
     [SerializeField]
-    private float moveSpeed = 4f;
+    private float moveSpeed = 5f;
     [Tooltip("How far one button press moves the ship, in world units.")]
     [SerializeField]
     private float movementDistance = 0.8f;
@@ -46,8 +40,7 @@ public class PlayerController : MonoBehaviour
     private Camera mainCamera;
     private Transform characterTransform;
     private SpriteRenderer characterRenderer;
-    private float currentX;
-    private float targetX;
+    private float targetPosition;
     private float stepDistance;
     private float magnetTimer;
 
@@ -78,9 +71,7 @@ public class PlayerController : MonoBehaviour
 
         characterTransform = characterObject.transform;
         characterRenderer = characterObject.GetComponent<SpriteRenderer>();
-
-        currentX = characterTransform.position.x;
-        targetX = currentX;
+        targetPosition = characterTransform.position.x;
 
         // The settings scene stores this on the device.
         stepDistance = movementDistance * GameSettings.TouchSensitivity;
@@ -98,26 +89,35 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (characterTransform != null)
+        {
+            MoveTowardsTarget();
+        }
+
         if (magnetTimer > 0f)
         {
             magnetTimer -= Time.deltaTime;
         }
     }
 
-    private void LateUpdate()
+    private void MoveTowardsTarget()
     {
-        if (characterTransform == null)
+        float currentX = characterTransform.position.x;
+
+        // Speed is movementDistance times moveSpeed, as the game was tuned.
+        float step = movementDistance * moveSpeed * Time.deltaTime;
+        float remaining = targetPosition - currentX;
+
+        if (Mathf.Abs(remaining) > step)
         {
-            return;
+            characterTransform.Translate(Vector2.right * (Mathf.Sign(remaining) * step), Space.World);
+        }
+        else
+        {
+            characterTransform.Translate(Vector2.right * remaining, Space.World);
         }
 
-        currentX = Mathf.MoveTowards(currentX, targetX, moveSpeed * Time.deltaTime);
         ClampToScreen();
-
-        // Only x is ours. y and z stay as the float animation left them.
-        Vector3 position = characterTransform.position;
-        position.x = currentX;
-        characterTransform.position = position;
     }
 
     private void ClampToScreen()
@@ -140,19 +140,22 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        currentX = Mathf.Clamp(currentX, leftBound, rightBound);
-        targetX = Mathf.Clamp(targetX, leftBound, rightBound);
+        Vector3 position = characterTransform.position;
+        position.x = Mathf.Clamp(position.x, leftBound, rightBound);
+        characterTransform.position = position;
+
+        targetPosition = Mathf.Clamp(targetPosition, leftBound, rightBound);
     }
 
     private void MoveLeft()
     {
-        targetX = currentX - stepDistance;
+        targetPosition = characterTransform.position.x - stepDistance;
         FaceDirection(-1f);
     }
 
     private void MoveRight()
     {
-        targetX = currentX + stepDistance;
+        targetPosition = characterTransform.position.x + stepDistance;
         FaceDirection(1f);
     }
 
@@ -165,7 +168,9 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (!collision.CompareTag("Magnet"))
+        // The player has three trigger colliders; the pickup destroys itself
+        // on the first one, but the others can still fire this frame.
+        if (collision == null || !collision.CompareTag("Magnet"))
         {
             return;
         }

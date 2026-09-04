@@ -3,12 +3,13 @@ using UnityEngine;
 /// <summary>The health pickup. Gives one heart back.</summary>
 public class Heart : MonoBehaviour
 {
+    private bool used;
     [SerializeField]
     private AudioClip collisionSound;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (!collision.CompareTag("Player"))
+        if (used || !collision.CompareTag("Player"))
         {
             return;
         }
@@ -24,6 +25,7 @@ public class Heart : MonoBehaviour
             return;
         }
 
+        used = true;
         playerHealth.RestoreHealth();
 
         if (collisionSound != null)

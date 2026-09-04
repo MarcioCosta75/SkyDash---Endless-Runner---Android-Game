@@ -39,7 +39,10 @@ public class EnemyManager : MonoBehaviour
             ActivateAlienEnemy();
 
             // Wait out the whole visit before counting down to the next one.
-            while (alienEnemy != null && alienEnemy.activeSelf)
+            // activeInHierarchy, not activeSelf: on game over the enemy's
+            // parent is switched off while its own flag stays true, and this
+            // loop would never end.
+            while (alienEnemy != null && alienEnemy.activeInHierarchy)
             {
                 yield return null;
             }
@@ -53,6 +56,12 @@ public class EnemyManager : MonoBehaviour
 
             yield return new WaitForSeconds(respawnDelay);
         }
+    }
+
+    /// <summary>Ends the cycle, so nothing spawns after the run is over.</summary>
+    public void StopCycle()
+    {
+        StopAllCoroutines();
     }
 
     private void ActivateAlienEnemy()

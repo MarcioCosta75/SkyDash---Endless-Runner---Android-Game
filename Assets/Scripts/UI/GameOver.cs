@@ -94,6 +94,13 @@ public class GameOver : MonoBehaviour
             scoreManager.StopScoring();
         }
 
+        // A root object, so it is not switched off with GameCapsule.
+        EnemyManager enemyManager = FindAnyObjectByType<EnemyManager>();
+        if (enemyManager != null)
+        {
+            enemyManager.StopCycle();
+        }
+
         BackgroundMusic.StopMusic();
 
         if (starsParticleSystem != null)

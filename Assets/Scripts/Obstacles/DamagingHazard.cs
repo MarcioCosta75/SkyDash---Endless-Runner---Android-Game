@@ -17,8 +17,15 @@ public class DamagingHazard : MonoBehaviour
     [SerializeField]
     private bool destroyedByMagneticField = true;
 
+    private bool spent;
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (spent)
+        {
+            return;
+        }
+
         if (collision.CompareTag("Player"))
         {
             Health playerHealth = collision.GetComponent<Health>();
@@ -44,6 +51,8 @@ public class DamagingHazard : MonoBehaviour
 
     private void Impact()
     {
+        spent = true;
+
         if (particleEffectPrefab != null)
         {
             Instantiate(particleEffectPrefab, transform.position, Quaternion.identity);

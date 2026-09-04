@@ -17,13 +17,16 @@ public class ShieldPowerUp : MonoBehaviour
     /// <summary>Raised on pickup, carrying how long the shield lasts.</summary>
     public static event Action<float> ShieldActivated;
 
+    private bool used;
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (!collision.CompareTag("Player"))
+        if (used || !collision.CompareTag("Player"))
         {
             return;
         }
 
+        used = true;
         ActivateShieldPowerUp(collision.gameObject);
 
         if (collisionSound != null)
