@@ -45,6 +45,16 @@ public class ScrollingBackground : MonoBehaviour
 
         float spacing = (highest - lowest) / (strips.Length - 1);
         loopHeight = spacing * strips.Length;
+
+        // Strips stacked at the same height would give a zero loop, and the
+        // recycle loop below would then never end.
+        if (loopHeight <= Mathf.Epsilon)
+        {
+            Debug.LogWarning(
+                "ScrollingBackground: the strips are not spread out vertically, " +
+                "so the background cannot loop. Disabling.", this);
+            enabled = false;
+        }
     }
 
     private void LateUpdate()
