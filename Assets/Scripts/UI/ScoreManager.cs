@@ -1,161 +1,172 @@
 using UnityEngine;
 using TMPro;
 
+/// <summary>
+/// Distance score, star counters and the difficulty ramp.
+/// Score is the distance actually travelled, so flying faster scores faster
+/// and the "m" unit on screen is true. Speed rises from one formula instead
+/// of a ladder of hand-written ranges, so it never stops climbing.
+/// </summary>
 public class ScoreManager : MonoBehaviour
 {
-    public TextMeshProUGUI scoreText;
-    public TextMeshProUGUI highscoreText;
-    public TextMeshProUGUI starCounterText;
-    public TextMeshProUGUI starTotalCounterText;
-    public GameObject health;
+    [Header("Texts")]
+    [SerializeField]
+    private TextMeshProUGUI scoreText;
+    [SerializeField]
+    private TextMeshProUGUI highscoreText;
+    [SerializeField]
+    private TextMeshProUGUI starCounterText;
+    [SerializeField]
+    private TextMeshProUGUI starTotalCounterText;
+    [SerializeField]
+    private TextMeshProUGUI levelText;
+    [SerializeField]
+    private TextMeshProUGUI speedText;
 
-    public CameraMovement cameraMovement;
+    [Header("Difficulty")]
+    [SerializeField]
+    private CameraMovement cameraMovement;
+    [Tooltip("Speed at level 1, in world units per second.")]
+    [SerializeField]
+    private float baseSpeed = 2.5f;
+    [Tooltip("Fraction of the base speed added by each level.")]
+    [SerializeField]
+    private float speedStepPerLevel = 0.2f;
+    [Tooltip("Distance in metres needed to reach the next level.")]
+    [SerializeField]
+    private float metresPerLevel = 250f;
+    [Tooltip("Highest speed multiplier, so the game stays playable.")]
+    [SerializeField]
+    private float maxSpeedMultiplier = 4f;
 
-    public TextMeshProUGUI levelText; // Texto do nível
-    public TextMeshProUGUI speedText; // Texto da velocidade
+    private const string HighscoreKey = "highscore_metres";
+    private const string TotalStarCounterKey = "totalStarCounter";
 
     private float score;
     private float highscore;
     private int totalStarCounter;
     private int starCounter;
+    private int currentLevel = -1;
+    private bool running = true;
 
-    private const string HighscoreKey = "highscore";
-    private const string TotalStarCounterKey = "totalStarCounter";
+    public int Level => currentLevel;
+    public float Score => score;
+    public int StarsThisRun => starCounter;
 
-    void Start()
+    private void Start()
     {
         highscore = PlayerPrefs.GetFloat(HighscoreKey, 0f);
-        highscoreText.text = "Highscore: " + FormatScore(highscore);
-        LoadTotalStarCounter();
-        UpdateStarTotalCounterText();
-        UpdateStarCounterText();
-        UpdateLevelAndSpeedText("Level 1", "Speed x1"); // Configurar mensagens iniciais do nível e velocidade
+        totalStarCounter = PlayerPrefs.GetInt(TotalStarCounterKey, 0);
+
+        UpdateHighscoreText();
+        UpdateStarTexts();
+        ApplyLevel(1);
     }
 
-    void Update()
+    private void Update()
     {
-        if (GameObject.FindGameObjectWithTag("Player") != null)
+        if (!running)
         {
-            score += 1f * Time.deltaTime;
+            return;
+        }
+
+        float speed = cameraMovement != null ? cameraMovement.CameraSpeed : baseSpeed;
+        score += speed * Time.deltaTime;
+
+        if (scoreText != null)
+        {
             scoreText.text = FormatScore(score);
+        }
 
-            if (score > highscore)
-            {
-                highscore = score;
-                highscoreText.text = "Highscore: " + FormatScore(highscore);
-                PlayerPrefs.SetFloat(HighscoreKey, highscore);
-            }
+        if (score > highscore)
+        {
+            highscore = score;
+            UpdateHighscoreText();
+        }
 
-            // Verificar o valor do score e ajustar o cameraSpeed
-            if (score >= 0 && score < 100)
-            {
-                cameraMovement.cameraSpeed = 2.5f;
-                UpdateLevelAndSpeedText("Level 1", "Speed x1"); // Atualizar mensagens do nível e velocidade
-            }
-            else if (score >= 100 && score < 200)
-            {
-                cameraMovement.cameraSpeed = 3f;
-                UpdateLevelAndSpeedText("Level 2", "Speed x2"); // Atualizar mensagens do nível e velocidade
-            }
-            else if (score >= 200 && score < 300)
-            {
-                cameraMovement.cameraSpeed = 3.5f;
-                UpdateLevelAndSpeedText("Level 3", "Speed x3"); // Atualizar mensagens do nível e velocidade
-            }
-            else if (score >= 300 && score < 400)
-            {
-                cameraMovement.cameraSpeed = 4f;
-                UpdateLevelAndSpeedText("Level 4", "Speed x4"); // Atualizar mensagens do nível e velocidade
-            }
-            else if (score >= 400 && score < 500)
-            {
-                cameraMovement.cameraSpeed = 4.5f;
-                UpdateLevelAndSpeedText("Level 5", "Speed x5"); // Atualizar mensagens do nível e velocidade
-            }
-            else if (score >= 500 && score < 600)
-            {
-                cameraMovement.cameraSpeed = 5f;
-                UpdateLevelAndSpeedText("Level 6", "Speed x6"); // Atualizar mensagens do nível e velocidade
-            }
-            else if (score >= 600 && score < 700)
-            {
-                cameraMovement.cameraSpeed = 5.5f;
-                UpdateLevelAndSpeedText("Level 7", "Speed x7"); // Atualizar mensagens do nível e velocidade
-            }
-            else if (score >= 700 && score < 800)
-            {
-                cameraMovement.cameraSpeed = 6f;
-                UpdateLevelAndSpeedText("Level 7", "Speed x7"); // Atualizar mensagens do nível e velocidade
-            }
-            else if (score >= 800 && score < 900)
-            {
-                cameraMovement.cameraSpeed = 6.5f;
-                UpdateLevelAndSpeedText("Level 8", "Speed x8"); // Atualizar mensagens do nível e velocidade
-            }
-            else if (score >= 900 && score < 1000)
-            {
-                cameraMovement.cameraSpeed = 7f;
-                UpdateLevelAndSpeedText("Level 9", "Speed x9"); // Atualizar mensagens do nível e velocidade
-            }
-            else if (score >= 1000 && score < 1100)
-            {
-                cameraMovement.cameraSpeed = 7.5f;
-                UpdateLevelAndSpeedText("Level 10", "Speed x10"); // Atualizar mensagens do nível e velocidade
-            }
-            // Adicione mais condições conforme necessário para outros valores de score
+        ApplyLevel(Mathf.FloorToInt(score / metresPerLevel) + 1);
+    }
 
-            // Você pode adicionar lógica adicional aqui, como aumentar o cameraSpeed gradualmente com base no score
+    private void ApplyLevel(int level)
+    {
+        if (level == currentLevel)
+        {
+            return;
+        }
+
+        currentLevel = level;
+
+        float multiplier = Mathf.Min(1f + speedStepPerLevel * (level - 1), maxSpeedMultiplier);
+
+        if (cameraMovement != null)
+        {
+            cameraMovement.CameraSpeed = baseSpeed * multiplier;
+        }
+
+        if (levelText != null)
+        {
+            levelText.text = "Level " + level;
+        }
+
+        if (speedText != null)
+        {
+            speedText.text = "Speed x" + multiplier.ToString("0.0");
         }
     }
 
-    public void IncrementTotalStarCounter()
+    /// <summary>Stops the score climbing, called on game over.</summary>
+    public void StopScoring()
     {
-        totalStarCounter++;
-        UpdateStarTotalCounterText();
-        SaveTotalStarCounter();
+        running = false;
+        SaveProgress();
     }
 
-    private void UpdateStarTotalCounterText()
-    {
-        starTotalCounterText.text = "Total: " + totalStarCounter.ToString();
-    }
-
-    public void IncrementStarCounter()
+    public void AddStar()
     {
         starCounter++;
-        UpdateStarCounterText();
+        totalStarCounter++;
+        UpdateStarTexts();
     }
 
-    private void UpdateStarCounterText()
+    /// <summary>Writes the record and star total to disk in one go.</summary>
+    public void SaveProgress()
     {
-        starCounterText.text = "x " + starCounter.ToString();
+        PlayerPrefs.SetFloat(HighscoreKey, highscore);
+        PlayerPrefs.SetInt(TotalStarCounterKey, totalStarCounter);
+        PlayerPrefs.Save();
     }
 
-    private void LoadTotalStarCounter()
+    private void OnApplicationPause(bool paused)
     {
-        if (PlayerPrefs.HasKey(TotalStarCounterKey))
+        if (paused)
         {
-            totalStarCounter = PlayerPrefs.GetInt(TotalStarCounterKey);
+            SaveProgress();
         }
-        else
+    }
+
+    private void UpdateHighscoreText()
+    {
+        if (highscoreText != null)
         {
-            totalStarCounter = 0;
+            highscoreText.text = "Highscore: " + FormatScore(highscore);
         }
     }
 
-    private void SaveTotalStarCounter()
+    private void UpdateStarTexts()
     {
-        PlayerPrefs.SetInt(TotalStarCounterKey, totalStarCounter); // Salva o valor total de estrelas
+        if (starCounterText != null)
+        {
+            starCounterText.text = "x " + starCounter;
+        }
+
+        if (starTotalCounterText != null)
+        {
+            starTotalCounterText.text = "Total: " + totalStarCounter;
+        }
     }
 
-    private string FormatScore(float value)
+    private static string FormatScore(float value)
     {
-        return ((int)value).ToString() + "m";
-    }
-
-    private void UpdateLevelAndSpeedText(string level, string speed)
-    {
-        levelText.text = level;
-        speedText.text = speed;
+        return Mathf.FloorToInt(value) + "m";
     }
 }

@@ -1,83 +1,100 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// One music player that survives scene loads.
+/// A second copy loaded with a new scene destroys itself, so restarting the
+/// game never stacks two tracks or leaves a half-built duplicate behind.
+/// </summary>
+[RequireComponent(typeof(AudioSource))]
 public class BackgroundMusic : MonoBehaviour
 {
+    [Tooltip("Scenes whose load should start the music.")]
+    [SerializeField]
+    private string[] scenesWithMusic = { SceneNames.Game };
+
     private static BackgroundMusic instance;
+
     private AudioSource audioSource;
 
     private void Awake()
     {
-        if (instance == null)
+        if (instance != null && instance != this)
         {
-            instance = this;
-            DontDestroyOnLoad(gameObject);
-            audioSource = GetComponent<AudioSource>();
+            Destroy(gameObject);
+            return;
         }
-        else
-        {
-            if (instance.audioSource.isPlaying)
-            {
-                audioSource.enabled = false;
-                return;
-            }
-        }
+
+        instance = this;
+        audioSource = GetComponent<AudioSource>();
+        DontDestroyOnLoad(gameObject);
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
-    private void Start()
+    private void OnDestroy()
     {
-        SceneManager.sceneLoaded += OnSceneLoaded;
+        if (instance == this)
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            instance = null;
+        }
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.name == "Menu")
+        PlayForScene(scene.name);
+    }
+
+    /// <summary>Starts the music if the named scene should have it, else stops it.</summary>
+    public static void PlayForScene(string sceneName)
+    {
+        if (instance == null)
         {
-            StopMusic();
+            return;
         }
-        else if (scene.name == "SpaceDash")
+
+        bool wanted = false;
+        for (int i = 0; i < instance.scenesWithMusic.Length; i++)
+        {
+            if (instance.scenesWithMusic[i] == sceneName)
+            {
+                wanted = true;
+                break;
+            }
+        }
+
+        if (wanted)
         {
             PlayMusic();
         }
-    }
-
-    private void OnEnable()
-    {
-        SceneManager.sceneUnloaded += OnSceneUnloaded;
-    }
-
-    private void OnDisable()
-    {
-        SceneManager.sceneUnloaded -= OnSceneUnloaded;
-    }
-
-    private void OnSceneUnloaded(Scene scene)
-    {
-        if (scene.name == "Menu")
+        else
         {
-
+            StopMusic();
         }
     }
 
-    public void PlayMusic()
+    public static void PlayMusic()
     {
-        if (audioSource != null && !audioSource.enabled)
+        if (instance == null || instance.audioSource == null || instance.audioSource.isPlaying)
         {
-            audioSource.enabled = true;
-            audioSource.Play();
+            return;
+        }
+
+        instance.audioSource.enabled = true;
+        instance.audioSource.Play();
+    }
+
+    public static void StopMusic()
+    {
+        if (instance != null && instance.audioSource != null && instance.audioSource.isPlaying)
+        {
+            instance.audioSource.Stop();
         }
     }
 
-    private void StopMusic()
+    public static bool IsPlaying()
     {
-        if (audioSource != null && audioSource.isPlaying)
-        {
-            audioSource.Stop();
-        }
-    }
-
-    public bool IsPlaying()
-    {
-        return audioSource != null && audioSource.isPlaying;
+        return instance != null && instance.audioSource != null && instance.audioSource.isPlaying;
     }
 }

@@ -1,24 +1,36 @@
 using UnityEngine;
 
+/// <summary>The health pickup. Gives one heart back.</summary>
 public class Heart : MonoBehaviour
 {
-    public AudioClip collisionSound;
+    [SerializeField]
+    private AudioClip collisionSound;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag("Player"))
+        if (!collision.CompareTag("Player"))
         {
-            Health playerHealth = collision.GetComponent<Health>();
-            if (playerHealth != null)
-            {
-                playerHealth.RestoreHealth();
-                Destroy(gameObject);
-
-                if (collisionSound != null)
-                {
-                    AudioSource.PlayClipAtPoint(collisionSound, transform.position);
-                }
-            }
+            return;
         }
+
+        Health playerHealth = collision.GetComponent<Health>();
+        if (playerHealth == null)
+        {
+            playerHealth = collision.GetComponentInParent<Health>();
+        }
+
+        if (playerHealth == null)
+        {
+            return;
+        }
+
+        playerHealth.RestoreHealth();
+
+        if (collisionSound != null)
+        {
+            AudioSource.PlayClipAtPoint(collisionSound, transform.position);
+        }
+
+        Destroy(gameObject);
     }
 }

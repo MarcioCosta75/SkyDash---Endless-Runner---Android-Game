@@ -1,68 +1,51 @@
 using UnityEngine;
 
-public class AmmoSpawner : MonoBehaviour
+/// <summary>
+/// Drops ammo pickups, picking between prefabs by weight.
+/// </summary>
+public class AmmoSpawner : FallingItemSpawner
 {
-    public GameObject[] ammoPickupPrefabs; // Array de prefabs de AmmoPickup
-    public float[] spawnProbabilities; // Array de probabilidades de spawn correspondentes
-    public float minSpawnInterval = 2f; // Tempo mínimo de espera entre spawns
-    public float maxSpawnInterval = 5f; // Tempo máximo de espera entre spawns
-    public float fallSpeed = 5f; // Velocidade de queda dos AmmoPickups
+    [Header("Ammo")]
+    [SerializeField]
+    private GameObject[] ammoPickupPrefabs;
+    [Tooltip("One weight per prefab. Higher means more common.")]
+    [SerializeField]
+    private float[] spawnProbabilities;
 
-    private void Start()
+    protected override GameObject GetItemPrefab()
     {
-        StartSpawnCountdown();
-    }
-
-    private void StartSpawnCountdown()
-    {
-        float spawnInterval = Random.Range(minSpawnInterval, maxSpawnInterval);
-        Invoke("SpawnAmmoPickup", spawnInterval);
-    }
-
-    private void SpawnAmmoPickup()
-    {
-        // Escolhe aleatoriamente um prefab de AmmoPickup
-        int randomIndex = ChooseRandomIndex();
-        if (randomIndex != -1)
+        if (ammoPickupPrefabs == null || ammoPickupPrefabs.Length == 0)
         {
-            GameObject ammoPickupPrefab = ammoPickupPrefabs[randomIndex];
-
-            // Realiza o spawn do AmmoPickup
-            GameObject ammoPickup = Instantiate(ammoPickupPrefab, transform.position, Quaternion.identity);
-            
-            // Obtém o componente Rigidbody2D do AmmoPickup
-            Rigidbody2D ammoPickupRigidbody = ammoPickup.GetComponent<Rigidbody2D>();
-
-            // Define a velocidade de queda do AmmoPickup
-            ammoPickupRigidbody.gravityScale = fallSpeed;
+            return null;
         }
 
-        // Inicia uma nova contagem regressiva para o próximo spawn
-        StartSpawnCountdown();
-    }
-
-    private int ChooseRandomIndex()
-    {
-        // Calcula o total das probabilidades de spawn
-        float totalProbability = 0f;
-        foreach (float probability in spawnProbabilities)
+        if (spawnProbabilities == null || spawnProbabilities.Length != ammoPickupPrefabs.Length)
         {
-            totalProbability += probability;
+            return ammoPickupPrefabs[Random.Range(0, ammoPickupPrefabs.Length)];
         }
 
-        // Escolhe aleatoriamente um índice baseado nas probabilidades de spawn
-        float randomValue = Random.Range(0f, totalProbability);
-        float cumulativeProbability = 0f;
+        float total = 0f;
+        for (int i = 0; i < spawnProbabilities.Length; i++)
+        {
+            total += Mathf.Max(0f, spawnProbabilities[i]);
+        }
 
+        if (total <= 0f)
+        {
+            return ammoPickupPrefabs[Random.Range(0, ammoPickupPrefabs.Length)];
+        }
+
+        float roll = Random.Range(0f, total);
+        float cumulative = 0f;
         for (int i = 0; i < ammoPickupPrefabs.Length; i++)
         {
-            cumulativeProbability += spawnProbabilities[i];
-            if (randomValue <= cumulativeProbability)
+            cumulative += Mathf.Max(0f, spawnProbabilities[i]);
+            if (roll <= cumulative)
             {
-                return i;
+                return ammoPickupPrefabs[i];
             }
         }
 
-        return -1;
+        return ammoPickupPrefabs[ammoPickupPrefabs.Length - 1];
     }
 }

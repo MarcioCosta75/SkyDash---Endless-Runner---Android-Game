@@ -1,104 +1,171 @@
+using System.Collections;
 using UnityEngine;
 
+/// <summary>
+/// The alien enemy: drifts across the top of the screen dropping missiles,
+/// and breaks after enough hits.
+/// </summary>
 public class MissileSpawner : MonoBehaviour
 {
-    public GameObject missilePrefab;
-    public float spawnInterval;
-    public float spawnSpeed;
-    public float spawnOffsetY;
-    public float movementSpeed = 3f; // Velocidade de movimento do spawner
+    [Header("Missiles")]
+    [SerializeField]
+    private GameObject missilePrefab;
+    [Tooltip("Seconds between missiles.")]
+    [SerializeField]
+    private float spawnInterval = 1f;
+    [Tooltip("Downward speed of a missile, in world units per second.")]
+    [SerializeField]
+    private float spawnSpeed = 0.5f;
+    [Tooltip("Vertical offset from the enemy where missiles appear.")]
+    [SerializeField]
+    private float spawnOffsetY = -0.5f;
 
-    public int projectileSharpHitsToDestroy = 3; // N�mero de vezes que o MissileSpawner pode ser atingido antes de ser destru�do
+    [Header("Movement")]
+    [Tooltip("Sideways speed of the enemy, in world units per second.")]
+    [SerializeField]
+    private float movementSpeed = 0.5f;
 
-    public AudioClip activeSound; // Som a ser reproduzido quando o MissileSpawner est� ativo
-    public GameObject explosionEffectPrefab; // Prefab da anima��o de explos�o
+    [Header("Damage")]
+    [SerializeField]
+    private int projectileSharpHitsToDestroy = 10;
+
+    [Header("Audio and effects")]
+    [SerializeField]
+    private AudioClip activeSound;
+    [SerializeField]
+    private AudioClip hitSound;
+    [SerializeField]
+    private AudioClip destructionSound;
+    [SerializeField]
+    private GameObject explosionEffectPrefab;
 
     private float direction = 1f;
-    private int projectileSharpHits = 0; // Contador de vezes que o MissileSpawner foi atingido
+    private int projectileSharpHits;
     private Camera mainCamera;
     private AudioSource audioSource;
-    private bool isActive = true; // Indica se o MissileSpawner est� ativo
+    private Coroutine spawnRoutine;
 
-    public AudioClip destructionSound; // Som a ser reproduzido quando o MissileSpawner � destru�do
-
-    public AudioClip hitSound;
-
-    private void Start()
+    private void Awake()
     {
-        InvokeRepeating("SpawnMissile", spawnInterval, spawnInterval);
-        mainCamera = Camera.main;
         audioSource = GetComponent<AudioSource>();
-        audioSource.clip = activeSound;
-        audioSource.Play();
+        mainCamera = Camera.main;
+    }
+
+    private void OnEnable()
+    {
+        projectileSharpHits = 0;
+
+        if (audioSource != null && activeSound != null)
+        {
+            audioSource.clip = activeSound;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
+
+        spawnRoutine = StartCoroutine(SpawnMissiles());
+    }
+
+    private void OnDisable()
+    {
+        if (spawnRoutine != null)
+        {
+            StopCoroutine(spawnRoutine);
+            spawnRoutine = null;
+        }
+
+        if (audioSource != null)
+        {
+            audioSource.Stop();
+        }
     }
 
     private void Update()
     {
-        if (isActive)
+        MoveSpawner();
+    }
+
+    private IEnumerator SpawnMissiles()
+    {
+        while (true)
         {
-            MoveSpawner();
+            yield return new WaitForSeconds(Mathf.Max(0.05f, spawnInterval));
+            SpawnMissile();
         }
     }
 
     private void SpawnMissile()
     {
-        if (isActive)
+        if (missilePrefab == null)
         {
-            Vector3 spawnPosition = transform.position + new Vector3(0f, spawnOffsetY, 0f);
-            Quaternion spawnRotation = Quaternion.identity;
-            GameObject missile = Instantiate(missilePrefab, spawnPosition, spawnRotation);
-            Rigidbody2D missileRigidbody = missile.GetComponent<Rigidbody2D>();
-            missileRigidbody.linearVelocity = Vector2.down * spawnSpeed;
+            return;
+        }
+
+        Vector3 spawnPosition = transform.position + new Vector3(0f, spawnOffsetY, 0f);
+        GameObject missile = Instantiate(missilePrefab, spawnPosition, Quaternion.identity);
+
+        Rigidbody2D body = missile.GetComponent<Rigidbody2D>();
+        if (body != null)
+        {
+            body.linearVelocity = Vector2.down * spawnSpeed;
         }
     }
 
     private void MoveSpawner()
     {
-        float movement = spawnSpeed * direction * Time.deltaTime;
-        transform.Translate(new Vector3(movement, 0f, 0f));
+        if (mainCamera == null)
+        {
+            mainCamera = Camera.main;
+            if (mainCamera == null)
+            {
+                return;
+            }
+        }
 
-        // Movimenta o spawner no eixo X
-        transform.Translate(Vector3.right * direction * movementSpeed * Time.deltaTime);
+        transform.Translate(Vector3.right * (direction * movementSpeed * Time.deltaTime));
 
-        // Converte a posi��o do spawner em coordenadas de viewport
         Vector3 viewportPosition = mainCamera.WorldToViewportPoint(transform.position);
 
-        // Limita o movimento do spawner dentro dos limites da viewport
-        viewportPosition.x = Mathf.Clamp01(viewportPosition.x);
-
-        // Converte de volta para a posi��o do mundo
-        transform.position = mainCamera.ViewportToWorldPoint(viewportPosition);
-
-        // Verifica se o spawner est� al�m dos limites da tela e muda a dire��o
+        // Turn around at the screen edges.
         if (viewportPosition.x <= 0f || viewportPosition.x >= 1f)
         {
+            viewportPosition.x = Mathf.Clamp01(viewportPosition.x);
+            transform.position = mainCamera.ViewportToWorldPoint(viewportPosition);
             direction *= -1f;
         }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag("ProjectileSharp"))
+        if (!collision.CompareTag("ProjectileSharp"))
         {
-            projectileSharpHits++;
-            if (projectileSharpHits >= projectileSharpHitsToDestroy)
-            {
-                DestroySpawner();
-            }
-            else
-            {
-                audioSource.PlayOneShot(hitSound);
-            }
+            return;
+        }
+
+        projectileSharpHits++;
+
+        if (projectileSharpHits >= projectileSharpHitsToDestroy)
+        {
+            DestroySpawner();
+        }
+        else if (audioSource != null && hitSound != null)
+        {
+            audioSource.PlayOneShot(hitSound);
         }
     }
 
     private void DestroySpawner()
     {
-        audioSource.Stop();
-        Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity);
-        gameObject.SetActive(false); // Desativa o MissileSpawner em vez de destru�-lo
-        audioSource.clip = destructionSound;
-        audioSource.Play();
-        isActive = false; // Define o MissileSpawner como inativo
+        if (explosionEffectPrefab != null)
+        {
+            Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity);
+        }
+
+        // Played at a point, because a disabled object cannot play audio.
+        if (destructionSound != null)
+        {
+            AudioSource.PlayClipAtPoint(destructionSound, transform.position);
+        }
+
+        gameObject.SetActive(false);
     }
 }

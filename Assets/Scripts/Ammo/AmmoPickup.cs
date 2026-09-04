@@ -1,29 +1,38 @@
 using UnityEngine;
 
+/// <summary>Refills the player's ammo.</summary>
 public class AmmoPickup : MonoBehaviour
 {
-    public int ammoAmount = 10; // Quantidade de munição a ser adicionada
-    public AudioClip pickupSound; // Som a ser reproduzido quando o pickup é coletado
+    [SerializeField]
+    private int ammoAmount = 2;
+    [SerializeField]
+    private AudioClip pickupSound;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Player"))
+        if (!collision.CompareTag("Player"))
         {
-            PlayerShooting playerShooting = collision.gameObject.GetComponentInChildren<PlayerShooting>();
-            if (playerShooting != null)
-            {
-                playerShooting.AcquireProjectiles(ammoAmount);
-                PlayPickupSound();
-                Destroy(gameObject);
-            }
+            return;
         }
-    }
 
-    private void PlayPickupSound()
-    {
+        PlayerShooting playerShooting = collision.GetComponentInChildren<PlayerShooting>();
+        if (playerShooting == null)
+        {
+            playerShooting = collision.GetComponentInParent<PlayerShooting>();
+        }
+
+        if (playerShooting == null)
+        {
+            return;
+        }
+
+        playerShooting.AcquireProjectiles(ammoAmount);
+
         if (pickupSound != null)
         {
             AudioSource.PlayClipAtPoint(pickupSound, transform.position);
         }
+
+        Destroy(gameObject);
     }
 }

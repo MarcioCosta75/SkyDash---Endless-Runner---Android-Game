@@ -1,17 +1,35 @@
 using UnityEngine;
 
+/// <summary>
+/// Drops obstacles at random spots inside a rectangle above the player.
+/// </summary>
 public class SpawnObstacles : MonoBehaviour
 {
-    public GameObject[] obstacles;
-    public float maxX;
-    public float maxY;
-    public float minX;
-    public float minY;
-    public float minTimeBetweenSpawn;
-    public float maxTimeBetweenSpawn;
+    [SerializeField]
+    private GameObject[] obstacles;
+
+    [Header("Spawn area, relative to this object")]
+    [SerializeField]
+    private float minX = -2.3f;
+    [SerializeField]
+    private float maxX = 2.3f;
+    [SerializeField]
+    private float minY = -3.4f;
+    [SerializeField]
+    private float maxY = 3.4f;
+
+    [Header("Timing")]
+    [SerializeField]
+    private float minTimeBetweenSpawn = 0.7f;
+    [SerializeField]
+    private float maxTimeBetweenSpawn = 1f;
+
+    [Header("Look")]
+    [Tooltip("Obstacles spawn at a random angle. Turn off for upright sprites.")]
+    [SerializeField]
+    private bool randomiseRotation = true;
 
     private float spawnTime;
-    private float timeBetweenSpawn;
 
     private void Start()
     {
@@ -29,26 +47,27 @@ public class SpawnObstacles : MonoBehaviour
 
     private void SetNextSpawnTime()
     {
-        timeBetweenSpawn = Random.Range(minTimeBetweenSpawn, maxTimeBetweenSpawn);
-        spawnTime = Time.time + timeBetweenSpawn;
+        spawnTime = Time.time + Random.Range(minTimeBetweenSpawn, maxTimeBetweenSpawn);
     }
 
     private void Spawn()
     {
-        int obstacleIndex = Random.Range(0, obstacles.Length);
-        float randomX = Random.Range(minX, maxX);
-        float randomY = Random.Range(minY, maxY);
-
-        Vector3 spawnPosition = transform.position + new Vector3(randomX, randomY, 0f);
-        Quaternion spawnRotation = Quaternion.identity;
-
-        if (obstacleIndex == 0 || obstacleIndex == 1 || obstacleIndex == 3 || obstacleIndex == 4 || obstacleIndex == 6 || obstacleIndex == 7 || obstacleIndex == 9)
+        if (obstacles == null || obstacles.Length == 0)
         {
-            float randomRotationZ = Random.Range(0f, 360f);
-            spawnRotation = Quaternion.Euler(0f, 0f, randomRotationZ);
+            return;
         }
 
-        GameObject obstacle = obstacles[obstacleIndex];
-        Instantiate(obstacle, spawnPosition, spawnRotation);
+        GameObject prefab = obstacles[Random.Range(0, obstacles.Length)];
+        if (prefab == null)
+        {
+            return;
+        }
+
+        Vector3 spawnPosition = transform.position + new Vector3(Random.Range(minX, maxX), Random.Range(minY, maxY), 0f);
+        Quaternion spawnRotation = randomiseRotation
+            ? Quaternion.Euler(0f, 0f, Random.Range(0f, 360f))
+            : Quaternion.identity;
+
+        Instantiate(prefab, spawnPosition, spawnRotation);
     }
 }

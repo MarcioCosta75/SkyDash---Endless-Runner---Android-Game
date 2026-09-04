@@ -1,73 +1,108 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Player hit points and the heart row that shows them.
+/// The UI is refreshed only when the value changes, and death is announced
+/// through an event so nothing has to poll for it every frame.
+/// </summary>
 public class Health : MonoBehaviour
 {
-    public int health;
-    public int maxHealth; // Nova variável para armazenar a quantidade máxima de vidas
-    public int numOfHearts;
-    public Image[] hearts;
-    public Sprite fullHeart;
-    public Sprite emptyHeart;
+    [SerializeField]
+    private int maxHealth = 3;
+
+    [Header("Heart display")]
+    [SerializeField]
+    private Image[] hearts;
+    [SerializeField]
+    private Sprite fullHeart;
+    [SerializeField]
+    private Sprite emptyHeart;
+
+    /// <summary>Raised once, when health reaches zero.</summary>
+    public event Action Died;
+
+    /// <summary>Raised whenever the current value changes.</summary>
+    public event Action<int, int> Changed;
+
+    private int health;
+    private bool isDead;
+
+    public int Current => health;
+    public int Max => maxHealth;
+    public bool IsDead => isDead;
+
+    private void Awake()
+    {
+        health = maxHealth;
+    }
 
     private void Start()
     {
-        health = maxHealth; // Definir a vida inicial para o valor máximo de vidas
+        RefreshHearts();
     }
 
-    void Update()
+    public void TakeDamage(int amount = 1)
     {
-        if (health > maxHealth)
+        if (isDead || amount <= 0)
         {
-            health = maxHealth;
+            return;
+        }
+
+        SetHealth(health - amount);
+
+        if (health <= 0)
+        {
+            isDead = true;
+            Died?.Invoke();
+        }
+    }
+
+    public void RestoreHealth(int amount = 1)
+    {
+        if (isDead || amount <= 0)
+        {
+            return;
+        }
+
+        SetHealth(health + amount);
+    }
+
+    private void SetHealth(int value)
+    {
+        int clamped = Mathf.Clamp(value, 0, maxHealth);
+        if (clamped == health)
+        {
+            return;
+        }
+
+        health = clamped;
+        RefreshHearts();
+        Changed?.Invoke(health, maxHealth);
+    }
+
+    private void RefreshHearts()
+    {
+        if (hearts == null)
+        {
+            return;
         }
 
         for (int i = 0; i < hearts.Length; i++)
         {
-            if (i < health)
+            if (hearts[i] == null)
             {
-                hearts[i].sprite = fullHeart;
-            }
-            else
-            {
-                hearts[i].sprite = emptyHeart;
+                continue;
             }
 
-            if (i < maxHealth)
+            bool slotExists = i < maxHealth;
+            hearts[i].enabled = slotExists;
+
+            if (slotExists)
             {
-                hearts[i].enabled = true;
-            }
-            else
-            {
-                hearts[i].enabled = false;
+                hearts[i].sprite = i < health ? fullHeart : emptyHeart;
             }
         }
-    }
-
-    public void TakeDamage()
-    {
-        health--;
-        if (health <= 0)
-        {
-            Die();
-        }
-    }
-
-    public void RestoreHealth()
-    {
-        health++;
-        if (health > maxHealth)
-        {
-            health = maxHealth;
-        }
-    }
-
-    private void Die()
-    {
-        // Aqui você pode adicionar o código para tratar o caso de morte do jogador
-        // Exemplo: Reiniciar o nível, exibir um painel de game over, etc.
-        Debug.Log("Player morreu");
     }
 }

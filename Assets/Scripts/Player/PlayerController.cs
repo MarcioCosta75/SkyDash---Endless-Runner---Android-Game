@@ -1,134 +1,160 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 
-public class PlayerController : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
+/// <summary>
+/// Moves the ship sideways between the screen edges and owns the magnet
+/// power-up timer. The two on-screen buttons nudge a target position and the
+/// ship slides towards it at a constant speed.
+/// </summary>
+public class PlayerController : MonoBehaviour
 {
-    public Button buttonLeft;
-    public Button buttonRight;
-    public GameObject characterObject; // Referência para o objeto do personagem
-    private Rigidbody2D rb;
-    private Camera mainCamera;
-    public bool isMagnet;
-    public float magnetDuration = 20f; // Duração do powerup em segundos
-    private float magnetTimer; // Tempo restante do powerup
-
+    [Header("Movement")]
     [SerializeField]
-    public float moveSpeed = 5f;
-    public float movementDistance = 1f; // Distância de movimento ao pressionar um botão
+    private GameObject characterObject;
+    [Tooltip("Sideways speed in world units per second.")]
+    [SerializeField]
+    private float moveSpeed = 5f;
+    [Tooltip("How far one button press moves the ship, in world units.")]
+    [SerializeField]
+    private float movementDistance = 0.8f;
 
-    private float targetPosition = 0f;
-    private Transform characterTransform; // Referência para o componente Transform do characterObject
+    [Header("Controls")]
+    [SerializeField]
+    private Button buttonLeft;
+    [SerializeField]
+    private Button buttonRight;
 
-    public AudioClip collisionSound; // Som de colisão com o magnet
+    [Header("Magnet power-up")]
+    [SerializeField]
+    private float magnetDuration = 20f;
+    [SerializeField]
+    private AudioClip collisionSound;
 
-    void Start()
+    /// <summary>The active player, so pickups do not each have to search for it.</summary>
+    public static PlayerController Instance { get; private set; }
+
+    /// <summary>Raised when the magnet is picked up, carrying its full duration.</summary>
+    public static event Action<float> MagnetActivated;
+
+    private Camera mainCamera;
+    private Transform characterTransform;
+    private SpriteRenderer characterRenderer;
+    private float targetPosition;
+    private float magnetTimer;
+
+    public bool IsMagnetActive => magnetTimer > 0f;
+    public Vector3 Position => characterTransform != null ? characterTransform.position : transform.position;
+
+    private void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
+        Instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
+    private void Start()
+    {
         mainCamera = Camera.main;
-        isMagnet = false;
-        magnetTimer = 0f;
 
-        // Adicionar eventos de clique aos botões
-        buttonLeft.onClick.AddListener(OnButtonLeftPressed);
-        buttonRight.onClick.AddListener(OnButtonRightPressed);
-
-        characterTransform = characterObject.transform; // Obter o componente Transform do characterObject
-    }
-
-    void Update()
-    {
         if (characterObject == null)
-            return; // Sair do método se o characterObject for nulo ou destruído
-
-        float currentX = characterObject.transform.position.x;
-
-        // Determinar a direção do movimento com base na posição atual e na posição de destino
-        float direction = Mathf.Sign(targetPosition - currentX);
-
-        // Calcular a distância que o personagem deve se mover neste quadro
-        float distanceToMove = direction * movementDistance * moveSpeed * Time.deltaTime;
-
-        // Verificar se o movimento ultrapassaria a posição de destino
-        float distanceToTarget = Mathf.Abs(targetPosition - currentX);
-        if (Mathf.Abs(distanceToMove) > distanceToTarget)
         {
-            // Se o movimento for maior que a distância para o destino, ajustar a distância para o destino
-            distanceToMove = distanceToTarget * direction;
+            characterObject = gameObject;
         }
 
-        // Mover o personagem
-        characterObject.transform.Translate(Vector2.right * distanceToMove);
+        characterTransform = characterObject.transform;
+        characterRenderer = characterObject.GetComponent<SpriteRenderer>();
+        targetPosition = characterTransform.position.x;
 
-        // Limitar a posição do personagem dentro dos limites da câmera
-        float characterWidth = 0f;
-        SpriteRenderer characterRenderer = characterObject.GetComponent<SpriteRenderer>();
-        if (characterRenderer != null)
-            characterWidth = characterRenderer.bounds.extents.x;
-
-        float leftBound = mainCamera.ViewportToWorldPoint(new Vector3(0, 0, mainCamera.nearClipPlane)).x + characterWidth;
-        float rightBound = mainCamera.ViewportToWorldPoint(new Vector3(1, 0, mainCamera.nearClipPlane)).x - characterWidth;
-
-        Vector3 characterPosition = characterObject.transform.position;
-        characterPosition.x = Mathf.Clamp(characterPosition.x, leftBound, rightBound);
-        characterObject.transform.position = characterPosition;
-
-        if (isMagnet)
+        if (buttonLeft != null)
         {
-            if (magnetTimer > 0f)
-            {
-                magnetTimer -= Time.deltaTime;
+            buttonLeft.onClick.AddListener(MoveLeft);
+        }
 
-                if (magnetTimer <= 0f)
-                {
-                    isMagnet = false;
-                    // O tempo do powerup acabou, adicione qualquer código adicional que desejar
-                }
-            }
+        if (buttonRight != null)
+        {
+            buttonRight.onClick.AddListener(MoveRight);
         }
     }
 
-    public void OnPointerDown(PointerEventData eventData)
+    private void Update()
     {
-        if (eventData.pointerEnter == buttonLeft.gameObject)
+        if (characterTransform == null)
         {
-            targetPosition = characterObject.transform.position.x - movementDistance;
+            return;
         }
-        else if (eventData.pointerEnter == buttonRight.gameObject)
+
+        MoveTowardsTarget();
+        TickMagnet();
+    }
+
+    private void MoveTowardsTarget()
+    {
+        Vector3 position = characterTransform.position;
+
+        position.x = Mathf.MoveTowards(position.x, targetPosition, moveSpeed * Time.deltaTime);
+
+        float halfWidth = characterRenderer != null ? characterRenderer.bounds.extents.x : 0f;
+        if (mainCamera != null)
         {
-            targetPosition = characterObject.transform.position.x + movementDistance;
+            float leftBound = mainCamera.ViewportToWorldPoint(new Vector3(0f, 0f, mainCamera.nearClipPlane)).x + halfWidth;
+            float rightBound = mainCamera.ViewportToWorldPoint(new Vector3(1f, 0f, mainCamera.nearClipPlane)).x - halfWidth;
+
+            position.x = Mathf.Clamp(position.x, leftBound, rightBound);
+            targetPosition = Mathf.Clamp(targetPosition, leftBound, rightBound);
+        }
+
+        characterTransform.position = position;
+    }
+
+    private void TickMagnet()
+    {
+        if (magnetTimer > 0f)
+        {
+            magnetTimer -= Time.deltaTime;
         }
     }
 
-    public void OnPointerUp(PointerEventData eventData)
+    private void MoveLeft()
     {
-
+        targetPosition = characterTransform.position.x - movementDistance;
+        FaceDirection(-1f);
     }
 
-    void OnButtonLeftPressed()
+    private void MoveRight()
     {
-        targetPosition = characterObject.transform.position.x - movementDistance;
-        characterTransform.localScale = new Vector3(-0.3f, characterTransform.localScale.y, characterTransform.localScale.z);
+        targetPosition = characterTransform.position.x + movementDistance;
+        FaceDirection(1f);
     }
 
-    void OnButtonRightPressed()
+    private void FaceDirection(float sign)
     {
-        targetPosition = characterObject.transform.position.x + movementDistance;
-        characterTransform.localScale = new Vector3(0.3f, characterTransform.localScale.y, characterTransform.localScale.z);
+        Vector3 scale = characterTransform.localScale;
+        scale.x = Mathf.Abs(scale.x) * sign;
+        characterTransform.localScale = scale;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.tag == "Magnet")
+        if (!collision.CompareTag("Magnet"))
         {
-            isMagnet = true;
-            magnetTimer = magnetDuration;
-            Destroy(collision.gameObject);
+            return;
+        }
 
-            if (collisionSound != null)
-            {
-                AudioSource.PlayClipAtPoint(collisionSound, transform.position);
-            }
+        magnetTimer = magnetDuration;
+        MagnetActivated?.Invoke(magnetDuration);
+
+        Destroy(collision.gameObject);
+
+        if (collisionSound != null)
+        {
+            AudioSource.PlayClipAtPoint(collisionSound, transform.position);
         }
     }
 }

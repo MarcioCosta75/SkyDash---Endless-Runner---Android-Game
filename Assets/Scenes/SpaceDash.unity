@@ -3841,7 +3841,7 @@ MonoBehaviour:
   - 100
   minSpawnInterval: 1
   maxSpawnInterval: 40
-  fallSpeed: 0.1
+  fallSpeed: 2
 --- !u!1001 &291458982
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5064,6 +5064,7 @@ GameObject:
   m_Component:
   - component: {fileID: 404468505}
   - component: {fileID: 404468506}
+  - component: {fileID: 872668677}
   m_Layer: 0
   m_Name: Border
   m_TagString: Border
@@ -5112,6 +5113,22 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 9.966736, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &872668677
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 404468504}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed7395b68df74272b368de39d8811422, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  protectedTags:
+  - Player
+  - MainCamera
+  - MagneticField
 --- !u!4 &408033064 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4023142506005068992, guid: 0b9676d7cf396a64187972882c388135, type: 3}
@@ -14106,6 +14123,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1168630224}
+  - component: {fileID: 1985764176}
   m_Layer: 0
   m_Name: PlanetsBackground
   m_TagString: Untagged
@@ -14144,6 +14162,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1985764176
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1168630223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b403a26c68b840529bb12d29fd557765, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  recycleMargin: 20
 --- !u!4 &1169168619 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3053945632662985964, guid: 338c129a76b6d884d858f3714f03f0e3, type: 3}

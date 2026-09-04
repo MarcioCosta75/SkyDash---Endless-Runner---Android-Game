@@ -1,31 +1,37 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Pause overlay. The paused flag is static so other scripts can read it,
+/// which means it also has to be cleared whenever the scene changes.
+/// </summary>
 public class PauseMenu : MonoBehaviour
 {
-    // Start is called before the first frame update
-    public static bool GameIsPaused = false;
-    public GameObject pauseMenuUI;
+    [SerializeField]
+    private GameObject pauseMenuUI;
 
-    // Update is called once per frame
-    void Update()
+    public static bool GameIsPaused { get; private set; }
+
+    private void OnDestroy()
     {
+        ResetPauseState();
+    }
+
+    private void Update()
+    {
+        // Back button on Android maps to Escape.
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (GameIsPaused)
-            {
-                Resume();
-            }
-            else
-            {
-                Pause();
-            }
+            Toggle();
         }
     }
+
     public void OnPauseButtonClicked()
+    {
+        Toggle();
+    }
+
+    private void Toggle()
     {
         if (GameIsPaused)
         {
@@ -37,29 +43,44 @@ public class PauseMenu : MonoBehaviour
         }
     }
 
-    public void Resume ()
+    public void Resume()
     {
-        pauseMenuUI.SetActive(false);
+        if (pauseMenuUI != null)
+        {
+            pauseMenuUI.SetActive(false);
+        }
+
         Time.timeScale = 1f;
         GameIsPaused = false;
     }
 
-    void Pause()
+    private void Pause()
     {
-        pauseMenuUI.SetActive(true);
+        if (pauseMenuUI != null)
+        {
+            pauseMenuUI.SetActive(true);
+        }
+
         Time.timeScale = 0f;
         GameIsPaused = true;
     }
 
     public void LoadMenu()
     {
-        Time.timeScale = 1f;
-        SceneManager.LoadScene("Menu");
+        ResetPauseState();
+        SceneManager.LoadScene(SceneNames.Menu);
     }
 
     public void QuitGame()
     {
-        Debug.Log("Quitting game...");
+        ResetPauseState();
         Application.Quit();
+    }
+
+    /// <summary>Clears the paused flag and restores normal time.</summary>
+    public static void ResetPauseState()
+    {
+        GameIsPaused = false;
+        Time.timeScale = 1f;
     }
 }

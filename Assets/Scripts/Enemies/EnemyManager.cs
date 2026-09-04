@@ -1,49 +1,82 @@
+using System.Collections;
 using UnityEngine;
 
+/// <summary>
+/// Brings the alien enemy in after a delay, and brings it back for another
+/// pass once the player has killed it.
+/// </summary>
 public class EnemyManager : MonoBehaviour
 {
-    public GameObject alienEnemy;
-    public GameObject spawnPoint;
-    public float activationDelay = 300f;
-
-    private float elapsedTime = 0f;
-    private bool alienEnemyActivated = false;
+    [SerializeField]
+    private GameObject alienEnemy;
+    [Tooltip("Obstacle spawner that runs while no enemy is on screen.")]
+    [SerializeField]
+    private GameObject spawnPoint;
+    [Tooltip("Seconds before the enemy first appears.")]
+    [SerializeField]
+    private float activationDelay = 100f;
+    [Tooltip("Seconds between one enemy dying and the next arriving.")]
+    [SerializeField]
+    private float respawnDelay = 90f;
 
     private void Start()
     {
-        ActivateSpawnPoint();
+        SetSpawnPointActive(true);
+
+        if (alienEnemy != null)
+        {
+            alienEnemy.SetActive(false);
+            StartCoroutine(EnemyCycle());
+        }
     }
 
-    private void Update()
+    private IEnumerator EnemyCycle()
     {
-        // Ativa o AlienEnemy após o tempo de delay
-        if (!alienEnemyActivated)
+        yield return new WaitForSeconds(activationDelay);
+
+        while (true)
         {
-            elapsedTime += Time.deltaTime;
-            if (elapsedTime >= activationDelay)
+            ActivateAlienEnemy();
+
+            // Wait out the whole visit before counting down to the next one.
+            while (alienEnemy != null && alienEnemy.activeSelf)
             {
-                ActivateAlienEnemy();
+                yield return null;
             }
-        }
-        else
-        {
-            // Verifica se o AlienEnemy está desativado e ativa o spawnPoint
-            if (alienEnemy == null || !alienEnemy.activeSelf)
+
+            SetSpawnPointActive(true);
+
+            if (alienEnemy == null)
             {
-                ActivateSpawnPoint();
+                yield break;
             }
+
+            yield return new WaitForSeconds(respawnDelay);
         }
     }
 
     private void ActivateAlienEnemy()
     {
+        if (alienEnemy == null)
+        {
+            return;
+        }
+
+        EnemyHealth health = alienEnemy.GetComponent<EnemyHealth>();
+        if (health != null)
+        {
+            health.ResetHealth();
+        }
+
         alienEnemy.SetActive(true);
-        alienEnemyActivated = true;
-        spawnPoint.SetActive(false);
+        SetSpawnPointActive(false);
     }
 
-    private void ActivateSpawnPoint()
+    private void SetSpawnPointActive(bool active)
     {
-        spawnPoint.SetActive(true);
+        if (spawnPoint != null && spawnPoint.activeSelf != active)
+        {
+            spawnPoint.SetActive(active);
+        }
     }
 }

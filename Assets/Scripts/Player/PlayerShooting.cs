@@ -2,88 +2,130 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+/// <summary>
+/// Fires projectiles at the alien enemy and tracks the ammo count.
+/// The fire button is only interactable when there is both ammo and a live
+/// target, so shots cannot be wasted while no enemy is on screen.
+/// </summary>
 public class PlayerShooting : MonoBehaviour
 {
-    public GameObject projectilePrefab; // Prefab do proj�til
-    public float projectileSpeed = 10f; // Velocidade do proj�til
+    [Header("Projectile")]
+    [SerializeField]
+    private GameObject projectilePrefab;
+    [SerializeField]
+    private float projectileSpeed = 10f;
 
-    public int maxProjectiles = 15; // N�mero m�ximo de proj�teis permitidos
-    public int currentProjectiles = 15; // N�mero atual de proj�teis dispon�veis
+    [Header("Ammo")]
+    [SerializeField]
+    private int maxProjectiles = 10;
+    [SerializeField]
+    private TextMeshProUGUI bulletsText;
+    [SerializeField]
+    private Button shootButton;
 
-    public TextMeshProUGUI bulletsText; // Refer�ncia ao componente TextMeshProUGUI para exibir o n�mero de balas
-    public Button shootButton; // Refer�ncia ao bot�o de disparo
+    [Tooltip("Optional. Left empty the target is found by its AlienEnemy tag.")]
+    [SerializeField]
+    private GameObject alienEnemy;
 
-    public GameObject alienEnemy; // Refer�ncia ao objeto AlienEnemy
+    private int currentProjectiles;
+    private bool buttonEnabled = true;
 
-    private bool canShoot = true; // Indica se o jogador pode disparar
+    public int CurrentProjectiles => currentProjectiles;
 
     private void Start()
     {
         currentProjectiles = maxProjectiles;
         UpdateBulletsText();
-        // Resto da inicializa��o...
 
         if (shootButton != null)
         {
             shootButton.onClick.AddListener(OnShootButtonClick);
         }
+
+        RefreshButtonState();
+    }
+
+    private void Update()
+    {
+        RefreshButtonState();
+    }
+
+    /// <summary>The live enemy, or null when none is on screen.</summary>
+    private GameObject FindTarget()
+    {
+        if (alienEnemy != null && alienEnemy.activeInHierarchy)
+        {
+            return alienEnemy;
+        }
+
+        GameObject tagged = GameObject.FindGameObjectWithTag("AlienEnemy");
+        if (tagged != null && tagged.activeInHierarchy)
+        {
+            alienEnemy = tagged;
+            return tagged;
+        }
+
+        return null;
+    }
+
+    private void RefreshButtonState()
+    {
+        if (shootButton == null)
+        {
+            return;
+        }
+
+        bool canFire = currentProjectiles > 0 && FindTarget() != null;
+        if (canFire != buttonEnabled)
+        {
+            buttonEnabled = canFire;
+            shootButton.interactable = canFire;
+        }
     }
 
     private void OnShootButtonClick()
     {
-        if (currentProjectiles > 0 && canShoot)
+        GameObject target = FindTarget();
+        if (currentProjectiles <= 0 || target == null)
         {
-            Shoot();
-            currentProjectiles--;
-            if (currentProjectiles <= 0)
-            {
-                canShoot = false;
-            }
-            UpdateBulletsText();
+            return;
         }
+
+        Shoot(target);
+        currentProjectiles--;
+        UpdateBulletsText();
+        RefreshButtonState();
     }
 
-    private void Shoot()
+    private void Shoot(GameObject target)
     {
-        if (projectilePrefab != null && alienEnemy != null)
+        if (projectilePrefab == null)
         {
-            // Cria o proj�til na posi��o atual do jogador
-            GameObject projectile = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
+            return;
+        }
 
-            // Obt�m a dire��o do proj�til em rela��o ao AlienEnemy
-            Vector3 direction = (alienEnemy.transform.position - projectile.transform.position).normalized;
+        GameObject projectile = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
 
-            // Obt�m o componente Rigidbody2D do proj�til
-            Rigidbody2D projectileRigidbody = projectile.GetComponent<Rigidbody2D>();
-
-            // Aplica uma for�a para mover o proj�til na dire��o calculada
-            projectileRigidbody.linearVelocity = direction * projectileSpeed;
+        Rigidbody2D body = projectile.GetComponent<Rigidbody2D>();
+        if (body != null)
+        {
+            Vector2 direction = ((Vector2)(target.transform.position - projectile.transform.position)).normalized;
+            body.linearVelocity = direction * projectileSpeed;
         }
     }
-
 
     public void AcquireProjectiles(int amount)
     {
-        currentProjectiles += amount;
-        currentProjectiles = Mathf.Clamp(currentProjectiles, 0, maxProjectiles);
-
-        if (!canShoot && currentProjectiles > 0)
-        {
-            canShoot = true;
-        }
+        currentProjectiles = Mathf.Clamp(currentProjectiles + amount, 0, maxProjectiles);
         UpdateBulletsText();
-    }
-
-    public void SetCanShoot(bool value)
-    {
-        canShoot = value;
+        RefreshButtonState();
     }
 
     private void UpdateBulletsText()
     {
         if (bulletsText != null)
         {
-            bulletsText.text = "Bullets " + currentProjectiles.ToString();
+            bulletsText.text = "Bullets " + currentProjectiles;
         }
     }
 }

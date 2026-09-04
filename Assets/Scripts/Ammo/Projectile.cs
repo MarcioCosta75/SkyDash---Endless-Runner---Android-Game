@@ -1,32 +1,53 @@
-﻿using UnityEngine;
+using UnityEngine;
 
+/// <summary>
+/// Homing shot fired by the player. It only reacts to the enemy and to the
+/// play area border, so falling pickups no longer swallow the shot.
+/// </summary>
 public class Projectile : MonoBehaviour
 {
-    public GameObject shootEffect;
-    public GameObject hitEffect;
-    public GameObject firingShip;
-    public float moveSpeed = 10f;
-    public float directionUpdateDelay = 0.1f;
-    public AudioClip activationSound; // Som a ser reproduzido quando o projetil é ativado
-    public AudioClip destructionSound; // Som a ser reproduzido quando o projetil é destruído
+    [Header("Effects")]
+    [SerializeField]
+    private GameObject shootEffect;
+    [SerializeField]
+    private GameObject hitEffect;
+    [SerializeField]
+    private AudioClip activationSound;
+    [SerializeField]
+    private AudioClip destructionSound;
+
+    [Header("Flight")]
+    [SerializeField]
+    private float moveSpeed = 10f;
+    [Tooltip("Seconds between re-aiming at the enemy.")]
+    [SerializeField]
+    private float directionUpdateDelay = 0.1f;
+    [Tooltip("The shot disappears after this many seconds.")]
+    [SerializeField]
+    private float lifetime = 5f;
+    [SerializeField]
+    private int damageAmount = 10;
 
     private GameObject alienEnemy;
     private Vector3 direction;
     private float directionUpdateTimer;
-    private AudioSource audioSource;
-
-    public int damageAmount = 10; // Quantidade de dano causada pelo projétil
 
     private void Start()
     {
-        Instantiate(shootEffect, transform.position, Quaternion.identity);
-        Destroy(gameObject, 5f);
+        if (shootEffect != null)
+        {
+            Instantiate(shootEffect, transform.position, Quaternion.identity);
+        }
 
-        audioSource = GetComponent<AudioSource>();
-        audioSource.clip = activationSound;
-        audioSource.Play();
+        if (activationSound != null)
+        {
+            AudioSource.PlayClipAtPoint(activationSound, transform.position);
+        }
 
+        direction = transform.up;
         UpdateProjectileDirection();
+
+        Destroy(gameObject, lifetime);
     }
 
     private void Update()
@@ -39,56 +60,60 @@ public class Projectile : MonoBehaviour
             directionUpdateTimer = directionUpdateDelay;
         }
 
-        // Move o projétil na direção definida
-        transform.Translate(direction * moveSpeed * Time.deltaTime);
+        // World space, so a rotated sprite cannot bend the flight path.
+        transform.position += direction * (moveSpeed * Time.deltaTime);
     }
 
     private void UpdateProjectileDirection()
     {
-        if (alienEnemy == null)
+        if (alienEnemy == null || !alienEnemy.activeInHierarchy)
         {
             alienEnemy = GameObject.FindGameObjectWithTag("AlienEnemy");
         }
 
-        if (alienEnemy != null)
+        if (alienEnemy != null && alienEnemy.activeInHierarchy)
         {
             direction = (alienEnemy.transform.position - transform.position).normalized;
-        }
-        else
-        {
-            // Se o objeto AlienEnemy não estiver presente, o projétil irá simplesmente para a frente
-            direction = transform.up;
         }
     }
 
     private void OnTriggerEnter2D(Collider2D col)
     {
-        if (col.gameObject.tag == "MagneticField")
-        {
-            // Ignora a colisão com o MagneticField
-            return;
-        }
-
-        if (col.gameObject != firingShip && col.gameObject.tag != "ProjectileSharp")
-        {
-            Instantiate(hitEffect, transform.position, Quaternion.identity);
-
-            audioSource.clip = destructionSound;
-            audioSource.Play();
-
-            Destroy(gameObject);
-        }
-
         if (col.CompareTag("AlienEnemy"))
         {
             EnemyHealth enemyHealth = col.GetComponent<EnemyHealth>();
+            if (enemyHealth == null)
+            {
+                enemyHealth = col.GetComponentInParent<EnemyHealth>();
+            }
+
             if (enemyHealth != null)
             {
                 enemyHealth.TakeDamage(damageAmount);
             }
 
-            // Destruir o projétil
+            Explode();
+            return;
+        }
+
+        if (col.CompareTag("Border"))
+        {
             Destroy(gameObject);
         }
+    }
+
+    private void Explode()
+    {
+        if (hitEffect != null)
+        {
+            Instantiate(hitEffect, transform.position, Quaternion.identity);
+        }
+
+        if (destructionSound != null)
+        {
+            AudioSource.PlayClipAtPoint(destructionSound, transform.position);
+        }
+
+        Destroy(gameObject);
     }
 }

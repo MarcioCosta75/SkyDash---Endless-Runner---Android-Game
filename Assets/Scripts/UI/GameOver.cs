@@ -1,69 +1,105 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Shows the game over panel and shuts the run down.
+/// It reacts to the player's death event rather than polling health, and it
+/// clears the paused state so the next run starts clean.
+/// </summary>
 public class GameOver : MonoBehaviour
 {
-    public GameObject gameoverpanel;
-    public SpawnObstacles spawnObstacles;
-    public AudioSource backgroundMusic;
-    public ParticleSystem starsParticleSystem;
-    public AudioSource deathSoundEffect;
-    public GameObject objectToDeactivate1;
-    public GameObject objectToDeactivate2;
+    [Header("Scene objects")]
+    [SerializeField]
+    private GameObject gameoverpanel;
+    [SerializeField]
+    private SpawnObstacles spawnObstacles;
+    [SerializeField]
+    private ParticleSystem starsParticleSystem;
+    [SerializeField]
+    private AudioSource deathSoundEffect;
+    [SerializeField]
+    private GameObject objectToDeactivate1;
+    [SerializeField]
+    private GameObject objectToDeactivate2;
 
-    private bool gameOver = false;
-
+    private bool gameOver;
     private Health playerHealth;
-    private BackgroundMusic backgroundMusicScript;
+    private ScoreManager scoreManager;
 
     private void Start()
     {
-        playerHealth = GameObject.FindGameObjectWithTag("Player").GetComponent<Health>();
-        backgroundMusicScript = FindObjectOfType<BackgroundMusic>();
+        scoreManager = FindAnyObjectByType<ScoreManager>();
 
-        if (backgroundMusic != null && backgroundMusicScript != null && !backgroundMusicScript.IsPlaying())
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
         {
-            backgroundMusic.Play();
+            playerHealth = player.GetComponent<Health>();
         }
+
+        if (playerHealth != null)
+        {
+            playerHealth.Died += GameOverSequence;
+        }
+
+        BackgroundMusic.PlayForScene(SceneNames.Game);
     }
 
-    private void Update()
+    private void OnDestroy()
     {
-        if (!gameOver && playerHealth.health <= 0)
+        if (playerHealth != null)
         {
-            GameOverSequence();
+            playerHealth.Died -= GameOverSequence;
         }
     }
 
     public void Restart()
     {
-        StopBackgroundMusic();
-
+        ResumeTime();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-
-        if (backgroundMusic != null)
-        {
-            backgroundMusic.Play();
-        }
     }
 
     public void MainMenu()
     {
-        StopBackgroundMusic();
+        ResumeTime();
+        SceneManager.LoadScene(SceneNames.Menu);
+    }
 
-        SceneManager.LoadScene("MainMenu");
+    private static void ResumeTime()
+    {
+        Time.timeScale = 1f;
+        PauseMenu.ResetPauseState();
     }
 
     private void GameOverSequence()
     {
+        if (gameOver)
+        {
+            return;
+        }
+
         gameOver = true;
-        gameoverpanel.SetActive(true);
 
-        spawnObstacles.enabled = false;
+        if (gameoverpanel != null)
+        {
+            gameoverpanel.SetActive(true);
+        }
 
-        StopBackgroundMusic();
+        if (spawnObstacles != null)
+        {
+            spawnObstacles.enabled = false;
+        }
 
-        starsParticleSystem.Pause();
+        if (scoreManager != null)
+        {
+            scoreManager.StopScoring();
+        }
+
+        BackgroundMusic.StopMusic();
+
+        if (starsParticleSystem != null)
+        {
+            starsParticleSystem.Pause();
+        }
 
         if (deathSoundEffect != null)
         {
@@ -78,14 +114,6 @@ public class GameOver : MonoBehaviour
         if (objectToDeactivate2 != null)
         {
             objectToDeactivate2.SetActive(false);
-        }
-    }
-
-    private void StopBackgroundMusic()
-    {
-        if (backgroundMusic != null && backgroundMusicScript != null && backgroundMusicScript.IsPlaying())
-        {
-            backgroundMusic.Stop();
         }
     }
 }

@@ -1,13 +1,23 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Drives the endless upward scroll. Everything that must travel with the
+/// player is parented under this object, so moving it moves the whole run.
+/// </summary>
 public class CameraMovement : MonoBehaviour
 {
-    public float cameraSpeed;
+    [SerializeField]
+    private float cameraSpeed = 2.5f;
 
-    void Update()
+    /// <summary>Current scroll speed in world units per second.</summary>
+    public float CameraSpeed
     {
-        transform.position += new Vector3(0, cameraSpeed * Time.deltaTime, 0);
+        get => cameraSpeed;
+        set => cameraSpeed = Mathf.Max(0f, value);
+    }
+
+    private void Update()
+    {
+        transform.position += new Vector3(0f, cameraSpeed * Time.deltaTime, 0f);
     }
 }
