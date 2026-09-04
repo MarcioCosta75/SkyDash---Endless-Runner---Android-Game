@@ -27,11 +27,27 @@ public class PlayerShooting : MonoBehaviour
     [SerializeField]
     private GameObject alienEnemy;
 
+    [Header("Ammo counter colours")]
+    [SerializeField]
+    private Color fullAmmoColour = Color.white;
+    [SerializeField]
+    private Color emptyAmmoColour = new Color(1f, 0.4f, 0.4f);
+
     private const float TargetSearchInterval = 0.15f;
 
     private int currentProjectiles;
     private bool buttonEnabled = true;
     private float nextTargetSearch;
+
+    private void OnEnable()
+    {
+        PlayerController.Tapped += OnShootButtonClick;
+    }
+
+    private void OnDisable()
+    {
+        PlayerController.Tapped -= OnShootButtonClick;
+    }
 
     private void Start()
     {
@@ -117,8 +133,8 @@ public class PlayerShooting : MonoBehaviour
 
         GameObject projectile = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
 
-        // Straight up when there is no alien, which is when the shot is being
-        // used to clear an obstacle.
+        // Up to start with when there is no alien. The projectile picks the
+        // nearest obstacle ahead on its first steer, a frame later.
         Vector2 direction = target != null
             ? ((Vector2)(target.transform.position - projectile.transform.position)).normalized
             : Vector2.up;
@@ -148,9 +164,15 @@ public class PlayerShooting : MonoBehaviour
 
     private void UpdateBulletsText()
     {
-        if (bulletsText != null)
+        if (bulletsText == null)
         {
-            bulletsText.text = "Bullets " + currentProjectiles;
+            return;
         }
+
+        bulletsText.text = "Bullets " + currentProjectiles;
+
+        // With the fire button retired, the greyed out button no longer says
+        // "empty", so the counter does.
+        bulletsText.color = currentProjectiles > 0 ? fullAmmoColour : emptyAmmoColour;
     }
 }

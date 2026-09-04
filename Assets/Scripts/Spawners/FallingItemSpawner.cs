@@ -17,7 +17,8 @@ public abstract class FallingItemSpawner : MonoBehaviour
     protected float minSpawnInterval;
     [SerializeField]
     protected float maxSpawnInterval;
-    [Tooltip("Seconds to wait before the first spawn.")]
+    [Tooltip("Seconds to wait before the first spawn. Leave at 0 for a random "
+             + "part of the interval, which keeps the spawners out of step.")]
     [SerializeField]
     protected float firstSpawnDelay;
 
@@ -39,16 +40,37 @@ public abstract class FallingItemSpawner : MonoBehaviour
 
     private IEnumerator SpawnLoop()
     {
-        if (firstSpawnDelay > 0f)
-        {
-            yield return new WaitForSeconds(firstSpawnDelay);
-        }
+        yield return new WaitForSeconds(FirstDelay());
 
         while (true)
         {
             Spawn();
             yield return new WaitForSeconds(NextInterval());
         }
+    }
+
+    /// <summary>
+    /// How long to wait for the very first item.
+    ///
+    /// With no delay set, every spawner fired on the same frame, so a run
+    /// opened with a star, a heart, a shield, a magnet and an ammo box all
+    /// falling together, and then nothing for half a minute. A random part of
+    /// each spawner's own interval staggers them without needing a value
+    /// tuned per spawner, and it keeps the rarer power-ups from arriving
+    /// before the player has done anything.
+    /// </summary>
+    private float FirstDelay()
+    {
+        if (firstSpawnDelay > 0f)
+        {
+            return firstSpawnDelay;
+        }
+
+        float interval = maxSpawnInterval > 0f
+            ? (Mathf.Min(minSpawnInterval, maxSpawnInterval) + maxSpawnInterval) * 0.5f
+            : spawnInterval;
+
+        return Mathf.Max(0.5f, interval * Random.Range(0.4f, 0.9f));
     }
 
     private float NextInterval()

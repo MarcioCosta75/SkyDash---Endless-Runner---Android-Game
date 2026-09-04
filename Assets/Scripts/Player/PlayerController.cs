@@ -54,6 +54,13 @@ public class PlayerController : MonoBehaviour
     /// <summary>Raised when the magnet is picked up, carrying its full duration.</summary>
     public static event Action<float> MagnetActivated;
 
+    /// <summary>
+    /// Raised on a tap: a touch that lifted quickly without travelling. Input
+    /// is read in one place, so this is where the tap is recognised and the
+    /// shooting script listens for it.
+    /// </summary>
+    public static event Action Tapped;
+
     private Camera mainCamera;
     private Transform characterTransform;
     private HoldButton holdLeft;
@@ -67,6 +74,19 @@ public class PlayerController : MonoBehaviour
     private bool dragging;
     private int dragFingerId = -1;
     private float lastDragScreenX;
+
+    [Header("Tap to shoot")]
+    [Tooltip("A touch counts as a tap if it travels less than this, in fractions of the screen width.")]
+    [SerializeField]
+    private float tapTravelLimit = 0.04f;
+    [Tooltip("A touch counts as a tap if it lifts within this many seconds.")]
+    [SerializeField]
+    private float tapTimeLimit = 0.35f;
+
+    private bool touchDown;
+    private Vector2 touchStart;
+    private float touchStartTime;
+    private float touchTravel;
 
     public bool IsMagnetActive => magnetTimer > 0f;
     public Vector3 Position => characterTransform != null ? characterTransform.position : transform.position;
@@ -148,6 +168,8 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        ReadTap();
+
         if (characterTransform != null)
         {
             float move = ReadButtonMovement() + ReadDragMovement();
@@ -164,6 +186,84 @@ public class PlayerController : MonoBehaviour
         {
             magnetTimer -= Time.deltaTime;
         }
+    }
+
+    /// <summary>
+    /// Watches for a tap, which is a touch that lifts quickly and barely
+    /// moves. Dragging to steer and tapping to shoot then share one finger
+    /// without either getting in the way of the other.
+    /// </summary>
+    private void ReadTap()
+    {
+        Vector2 position;
+        bool held = TryGetPointer(out position);
+
+        if (held && !touchDown)
+        {
+            touchDown = true;
+            touchStart = position;
+            touchStartTime = Time.unscaledTime;
+            touchTravel = 0f;
+            return;
+        }
+
+        if (held)
+        {
+            touchTravel = Mathf.Max(touchTravel, Vector2.Distance(position, touchStart));
+            return;
+        }
+
+        if (!touchDown)
+        {
+            return;
+        }
+
+        touchDown = false;
+
+        float limit = tapTravelLimit * Mathf.Max(1, Screen.width);
+        bool quick = Time.unscaledTime - touchStartTime <= tapTimeLimit;
+
+        if (quick && touchTravel <= limit)
+        {
+            Tapped?.Invoke();
+        }
+    }
+
+    /// <summary>The pointer position, if a finger or the mouse is down and it
+    /// did not start on the UI.</summary>
+    private bool TryGetPointer(out Vector2 position)
+    {
+        position = Vector2.zero;
+
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.GetTouch(0);
+            if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
+            {
+                return false;
+            }
+
+            if (touch.phase == TouchPhase.Began && IsOverUI(touch.position, touch.fingerId))
+            {
+                return false;
+            }
+
+            position = touch.position;
+            return true;
+        }
+
+        if (Input.GetMouseButton(0))
+        {
+            if (!touchDown && IsOverUI(Input.mousePosition, -1))
+            {
+                return false;
+            }
+
+            position = Input.mousePosition;
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>Distance to move this frame from the on-screen buttons.</summary>

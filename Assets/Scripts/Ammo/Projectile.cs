@@ -31,6 +31,9 @@ public class Projectile : MonoBehaviour
     private float lifetime = 5f;
     [SerializeField]
     private int damageAmount = 10;
+    [Tooltip("How far the shot looks for an obstacle when no alien is out.")]
+    [SerializeField]
+    private float obstacleSearchRadius = 9f;
 
     private Rigidbody2D body;
     private GameObject alienEnemy;
@@ -91,6 +94,26 @@ public class Projectile : MonoBehaviour
 
     private void UpdateProjectileDirection()
     {
+        Vector3? target = FindTarget();
+
+        if (target.HasValue)
+        {
+            direction = ((Vector2)(target.Value - transform.position)).normalized;
+        }
+
+        ApplyVelocity();
+    }
+
+    /// <summary>
+    /// What to steer at: the alien if one is out, otherwise the nearest
+    /// obstacle ahead.
+    ///
+    /// Shots used to fly straight up when there was no alien, which wasted
+    /// most of them. Homing on the nearest asteroid means a shot fired to
+    /// clear the way actually clears something.
+    /// </summary>
+    private Vector3? FindTarget()
+    {
         if (alienEnemy == null || !alienEnemy.activeInHierarchy)
         {
             alienEnemy = GameObject.FindGameObjectWithTag("AlienEnemy");
@@ -98,10 +121,48 @@ public class Projectile : MonoBehaviour
 
         if (alienEnemy != null && alienEnemy.activeInHierarchy)
         {
-            direction = ((Vector2)(alienEnemy.transform.position - transform.position)).normalized;
+            return alienEnemy.transform.position;
         }
 
-        ApplyVelocity();
+        return NearestObstacleAhead();
+    }
+
+    private Vector3? NearestObstacleAhead()
+    {
+        // Only what is in front, so a shot never turns back on itself.
+        Collider2D[] nearby = Physics2D.OverlapCircleAll(transform.position, obstacleSearchRadius);
+
+        float bestDistance = float.MaxValue;
+        Vector3? best = null;
+
+        for (int i = 0; i < nearby.Length; i++)
+        {
+            Collider2D candidate = nearby[i];
+            if (candidate == null)
+            {
+                continue;
+            }
+
+            if (!candidate.CompareTag("Obstacle") && !candidate.CompareTag("Missile"))
+            {
+                continue;
+            }
+
+            Vector3 position = candidate.transform.position;
+            if (position.y < transform.position.y)
+            {
+                continue;
+            }
+
+            float distance = ((Vector2)(position - transform.position)).sqrMagnitude;
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                best = position;
+            }
+        }
+
+        return best;
     }
 
     private void ApplyVelocity()
