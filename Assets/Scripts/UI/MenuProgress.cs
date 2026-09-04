@@ -31,7 +31,16 @@ public class MenuProgress : MonoBehaviour
             label = Build();
         }
 
-        label.text = Describe();
+        Refresh();
+    }
+
+    /// <summary>Re-reads the saved figures. Called after a shop purchase.</summary>
+    public void Refresh()
+    {
+        if (label != null)
+        {
+            label.text = Describe();
+        }
     }
 
     private string Describe()

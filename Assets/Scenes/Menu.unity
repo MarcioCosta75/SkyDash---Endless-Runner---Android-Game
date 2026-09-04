@@ -1206,6 +1206,7 @@ GameObject:
   - component: {fileID: 1381150669}
   - component: {fileID: 1381150668}
   - component: {fileID: 395608001}
+  - component: {fileID: 38643417}
   m_Layer: 0
   m_Name: SceneManager
   m_TagString: Untagged
@@ -1253,6 +1254,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   screenHeight: 0.245
+--- !u!114 &38643417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1381150667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3044bd8337744eead66af434d149d07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1781211391
 GameObject:
   m_ObjectHideFlags: 0
