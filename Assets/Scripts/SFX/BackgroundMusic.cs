@@ -11,7 +11,7 @@ public class BackgroundMusic : MonoBehaviour
 {
     [Tooltip("Scenes whose load should start the music.")]
     [SerializeField]
-    private string[] scenesWithMusic = { SceneNames.Game };
+    private string[] scenesWithMusic = { SceneNames.Menu, SceneNames.Settings, SceneNames.Game };
     [Tooltip("Where the track sits in the mix, before the player's volume setting.")]
     [Range(0f, 1f)]
     [SerializeField]

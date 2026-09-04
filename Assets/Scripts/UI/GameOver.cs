@@ -55,7 +55,7 @@ public class GameOver : MonoBehaviour
     public void Restart()
     {
         ResumeTime();
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        SceneFader.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     private static void ResumeTime()

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -14,6 +15,14 @@ public class StarController : MonoBehaviour
     [SerializeField]
     private float attractionRange = 6f;
 
+    [Header("Collect")]
+    [Tooltip("Seconds the star takes to pop and vanish when collected.")]
+    [SerializeField]
+    private float popDuration = 0.16f;
+    [Tooltip("How much it grows while popping.")]
+    [SerializeField]
+    private float popScale = 1.9f;
+
     private static ScoreManager cachedScoreManager;
     private static StarSpawner cachedSpawner;
 
@@ -22,7 +31,7 @@ public class StarController : MonoBehaviour
     private void Update()
     {
         PlayerController player = PlayerController.Instance;
-        if (player == null || !player.IsMagnetActive)
+        if (collected || player == null || !player.IsMagnetActive)
         {
             return;
         }
@@ -86,6 +95,44 @@ public class StarController : MonoBehaviour
         if (cachedSpawner != null)
         {
             cachedSpawner.PlayCollectSound();
+        }
+
+        StartCoroutine(Pop());
+    }
+
+    /// <summary>
+    /// Flares out and fades as it disappears, so collecting a star is
+    /// something you see and not only something you hear.
+    /// </summary>
+    private IEnumerator Pop()
+    {
+        // Stop it being collected again, and stop it drifting on the magnet
+        // while it plays out.
+        Collider2D[] colliders = GetComponents<Collider2D>();
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            colliders[i].enabled = false;
+        }
+
+        SpriteRenderer sprite = GetComponent<SpriteRenderer>();
+        Vector3 startScale = transform.localScale;
+        Color startColour = sprite != null ? sprite.color : Color.white;
+
+        float elapsed = 0f;
+        while (elapsed < popDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / popDuration);
+
+            transform.localScale = startScale * Mathf.Lerp(1f, popScale, t);
+
+            if (sprite != null)
+            {
+                sprite.color = new Color(startColour.r, startColour.g, startColour.b,
+                                         startColour.a * (1f - t));
+            }
+
+            yield return null;
         }
 
         Destroy(gameObject);

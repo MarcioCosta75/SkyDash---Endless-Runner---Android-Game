@@ -83,7 +83,7 @@ public class PauseMenu : MonoBehaviour
     public void LoadMenu()
     {
         ResetPauseState();
-        SceneManager.LoadScene(SceneNames.Menu);
+        SceneFader.LoadScene(SceneNames.Menu);
     }
 
     public void QuitGame()

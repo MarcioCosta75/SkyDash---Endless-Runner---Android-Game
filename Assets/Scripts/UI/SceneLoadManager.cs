@@ -10,6 +10,6 @@ public class SceneLoadManager : MonoBehaviour
     public void LoadScene(int sceneIndex)
     {
         PauseMenu.ResetPauseState();
-        SceneManager.LoadScene(sceneIndex);
+        SceneFader.LoadScene(sceneIndex);
     }
 }
