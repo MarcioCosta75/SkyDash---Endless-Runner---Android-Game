@@ -28,6 +28,14 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float maxDragSpeed = 24f;
 
+    [Header("Feel")]
+    [Tooltip("Degrees the ship tilts into a turn. 0 turns tilting off.")]
+    [SerializeField]
+    private float bankAngle = 10f;
+    [Tooltip("How quickly the tilt follows the movement.")]
+    [SerializeField]
+    private float bankResponse = 10f;
+
     [Header("Controls")]
     [SerializeField]
     private Button buttonLeft;
@@ -54,6 +62,7 @@ public class PlayerController : MonoBehaviour
 
     private float sensitivity = 1f;
     private float magnetTimer;
+    private float bank;
 
     private bool dragging;
     private int dragFingerId = -1;
@@ -120,6 +129,7 @@ public class PlayerController : MonoBehaviour
             }
 
             ClampToScreen();
+            UpdateBank(move);
         }
 
         if (magnetTimer > 0f)
@@ -277,6 +287,28 @@ public class PlayerController : MonoBehaviour
     private void Move(float distance)
     {
         characterTransform.Translate(Vector2.right * distance, Space.World);
+    }
+
+    /// <summary>
+    /// Leans the ship into a turn and levels it out again. Reads as weight,
+    /// and shows the player that the input registered.
+    /// </summary>
+    private void UpdateBank(float distanceThisFrame)
+    {
+        if (bankAngle <= 0f)
+        {
+            return;
+        }
+
+        float speed = Time.deltaTime > 0f ? distanceThisFrame / Time.deltaTime : 0f;
+        float target = -Mathf.Clamp(speed / Mathf.Max(0.01f, buttonMoveSpeed), -1f, 1f) * bankAngle;
+
+        bank = Mathf.Lerp(bank, target, 1f - Mathf.Exp(-bankResponse * Time.deltaTime));
+
+        // The sprite is mirrored when facing left, which would flip the tilt
+        // with it, so the sign follows the facing.
+        float facing = Mathf.Sign(characterTransform.localScale.x);
+        characterTransform.localRotation = Quaternion.Euler(0f, 0f, bank * facing);
     }
 
     private void ClampToScreen()

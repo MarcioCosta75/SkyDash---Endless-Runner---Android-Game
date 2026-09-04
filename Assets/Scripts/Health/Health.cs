@@ -4,13 +4,18 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Player hit points and the heart row that shows them.
-/// The UI is refreshed only when the value changes, and death is announced
-/// through an event so nothing has to poll for it every frame.
+///
+/// A hit grants a short spell of invulnerability. Without it, two obstacles
+/// arriving close together take two hearts for what the player reads as a
+/// single mistake, and a full run can end in half a second.
 /// </summary>
 public class Health : MonoBehaviour
 {
     [SerializeField]
     private int maxHealth = 3;
+    [Tooltip("Seconds of invulnerability after a hit.")]
+    [SerializeField]
+    private float invulnerabilityDuration = 1.2f;
 
     [Header("Heart display")]
     [SerializeField]
@@ -26,12 +31,20 @@ public class Health : MonoBehaviour
     /// <summary>Raised whenever the current value changes.</summary>
     public event Action<int, int> Changed;
 
+    /// <summary>Raised when a hit lands, with the seconds of grace that follow.</summary>
+    public event Action<float> Hurt;
+
+    /// <summary>Raised when a heart is gained.</summary>
+    public event Action Healed;
+
     private int health;
     private bool isDead;
+    private float invulnerableUntil;
 
     public int Current => health;
     public int Max => maxHealth;
     public bool IsDead => isDead;
+    public bool IsInvulnerable => Time.time < invulnerableUntil;
 
     private void Awake()
     {
@@ -48,7 +61,7 @@ public class Health : MonoBehaviour
 
     public void TakeDamage(int amount = 1)
     {
-        if (isDead || amount <= 0)
+        if (isDead || amount <= 0 || IsInvulnerable)
         {
             return;
         }
@@ -59,17 +72,22 @@ public class Health : MonoBehaviour
         {
             isDead = true;
             Died?.Invoke();
+            return;
         }
+
+        invulnerableUntil = Time.time + invulnerabilityDuration;
+        Hurt?.Invoke(invulnerabilityDuration);
     }
 
     public void RestoreHealth(int amount = 1)
     {
-        if (isDead || amount <= 0)
+        if (isDead || amount <= 0 || health >= maxHealth)
         {
             return;
         }
 
         SetHealth(health + amount);
+        Healed?.Invoke();
     }
 
     private void SetHealth(int value)

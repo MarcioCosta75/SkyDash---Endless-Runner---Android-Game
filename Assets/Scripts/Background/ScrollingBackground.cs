@@ -11,10 +11,17 @@ public class ScrollingBackground : MonoBehaviour
     [Tooltip("Extra distance below the camera before a strip is recycled.")]
     [SerializeField]
     private float recycleMargin = 20f;
+    [Tooltip("How much of the camera's motion the background copies. 0 keeps it "
+             + "still, 1 pins it to the camera. Small values read as distance.")]
+    [Range(0f, 1f)]
+    [SerializeField]
+    private float parallaxFactor = 0.22f;
 
     private Camera mainCamera;
     private Transform[] strips;
     private float loopHeight;
+    private float lastCameraY;
+    private bool hasLastCameraY;
 
     private void Start()
     {
@@ -68,7 +75,23 @@ public class ScrollingBackground : MonoBehaviour
             }
         }
 
-        float cameraBottom = mainCamera.transform.position.y - mainCamera.orthographicSize;
+        float cameraY = mainCamera.transform.position.y;
+
+        // Drifting up with a fraction of the camera makes the planets pass
+        // more slowly than the obstacles, which reads as depth.
+        if (hasLastCameraY && parallaxFactor > 0f)
+        {
+            float drift = (cameraY - lastCameraY) * parallaxFactor;
+            if (drift != 0f)
+            {
+                transform.position += new Vector3(0f, drift, 0f);
+            }
+        }
+
+        lastCameraY = cameraY;
+        hasLastCameraY = true;
+
+        float cameraBottom = cameraY - mainCamera.orthographicSize;
         float recycleBelow = cameraBottom - recycleMargin;
 
         for (int i = 0; i < strips.Length; i++)

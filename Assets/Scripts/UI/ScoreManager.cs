@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using TMPro;
 
@@ -36,6 +37,14 @@ public class ScoreManager : MonoBehaviour
     [Tooltip("Distance in metres needed to reach the next level.")]
     [SerializeField]
     private float metresPerLevel = 250f;
+    [Header("Feel")]
+    [Tooltip("How much the star counter grows when a star is collected.")]
+    [SerializeField]
+    private float pulseScale = 1.35f;
+    [Tooltip("Seconds the pulse takes to settle.")]
+    [SerializeField]
+    private float pulseDuration = 0.18f;
+
     [Tooltip("Highest speed multiplier. 3 matches the fastest the game reached " +
              "before the level ladder was replaced. Raise it to keep the " +
              "difficulty climbing for longer.")]
@@ -54,6 +63,7 @@ public class ScoreManager : MonoBehaviour
     private int starCounter;
     private int currentLevel = -1;
     private bool running = true;
+    private float bestBeforeRun;
 
     public int Level => currentLevel;
     public float Score => score;
@@ -62,6 +72,7 @@ public class ScoreManager : MonoBehaviour
     private void Start()
     {
         highscore = PlayerPrefs.GetFloat(HighscoreKey, 0f);
+        bestBeforeRun = highscore;
         totalStarCounter = PlayerPrefs.GetInt(TotalStarCounterKey, 0);
 
         UpdateHighscoreText();
@@ -120,6 +131,11 @@ public class ScoreManager : MonoBehaviour
         }
 
         LevelChanged?.Invoke(level);
+
+        if (level > 1)
+        {
+            Pulse(levelText);
+        }
     }
 
     /// <summary>Stops the score climbing, called on game over.</summary>
@@ -127,6 +143,26 @@ public class ScoreManager : MonoBehaviour
     {
         running = false;
         SaveProgress();
+        ShowRunSummary();
+    }
+
+    /// <summary>
+    /// Replaces the highscore line with what this run achieved. The label sits
+    /// on the game over panel, so this is the first thing read after dying.
+    /// </summary>
+    private void ShowRunSummary()
+    {
+        if (highscoreText == null)
+        {
+            return;
+        }
+
+        string firstLine = FormatScore(score) + "   Stars " + starCounter;
+        string secondLine = score > bestBeforeRun
+            ? "NEW BEST!"
+            : "Best " + FormatScore(bestBeforeRun);
+
+        highscoreText.text = firstLine + "\n" + secondLine;
     }
 
     public void AddStar()
@@ -134,6 +170,37 @@ public class ScoreManager : MonoBehaviour
         starCounter++;
         totalStarCounter++;
         UpdateStarTexts();
+        Pulse(starCounterText);
+    }
+
+    /// <summary>Briefly grows a label, so a pickup is felt and not just read.</summary>
+    private void Pulse(TextMeshProUGUI label)
+    {
+        if (label == null || !isActiveAndEnabled)
+        {
+            return;
+        }
+
+        StartCoroutine(PulseRoutine(label.transform));
+    }
+
+    private IEnumerator PulseRoutine(Transform target)
+    {
+        Vector3 rest = Vector3.one;
+        float elapsed = 0f;
+
+        while (elapsed < pulseDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / pulseDuration);
+
+            // Out and back in one arc.
+            float amount = Mathf.Sin(t * Mathf.PI);
+            target.localScale = rest * Mathf.Lerp(1f, pulseScale, amount);
+            yield return null;
+        }
+
+        target.localScale = rest;
     }
 
     /// <summary>Writes the record and star total to disk in one go.</summary>
