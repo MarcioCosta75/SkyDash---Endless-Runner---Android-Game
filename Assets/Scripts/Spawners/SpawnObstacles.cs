@@ -2,14 +2,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Places obstacles in rows above the screen, always leaving one gap the astronaut
-/// can fit through.
+/// Places obstacles in rows above the screen, always leaving one gap the
+/// astronaut can fit through.
 ///
-/// The old version scattered each obstacle by up to 3.4 units vertically. That
-/// broke the order they arrived in: two obstacles spawned a second apart could
-/// reach the player at the same moment, side by side, with no way through.
-/// Rows now arrive in the order they are made, and the gap is reserved before
-/// any obstacle is placed, so a run is always survivable.
+/// The gap is what sets the difficulty. It starts wide enough to be forgiving
+/// and tightens as the run goes on, while more obstacles join each row, so a
+/// late row demands a precise line instead of a rough flick. It never closes
+/// below a passable width, and never moves further between rows than the
+/// astronaut can travel in the time available.
 /// </summary>
 public class SpawnObstacles : MonoBehaviour
 {
@@ -33,31 +33,34 @@ public class SpawnObstacles : MonoBehaviour
     private float minTimeBetweenSpawn = 0.7f;
     [SerializeField]
     private float maxTimeBetweenSpawn = 1f;
-    [Tooltip("Rows come this much closer together at full difficulty. 0.6 means 40 percent quicker.")]
+    [Tooltip("Rows come this much closer together at full difficulty.")]
     [SerializeField]
-    private float intervalAtMaxDifficulty = 0.62f;
+    private float intervalAtMaxDifficulty = 0.58f;
 
-    [Header("Fairness")]
-    [Tooltip("Width of the guaranteed gap, in world units. The astronaut is about 0.8 wide.")]
+    [Header("The gap")]
+    [Tooltip("Gap width at level 1, in world units. The astronaut is about 0.8 wide.")]
     [SerializeField]
-    private float gapWidth = 1.8f;
-    [Tooltip("Space each obstacle needs, in world units.")]
+    private float gapWidthAtStart = 1.9f;
+    [Tooltip("Gap width at full difficulty. Below about 1.05 it stops being passable.")]
     [SerializeField]
-    private float obstacleWidth = 1f;
+    private float gapWidthAtMax = 1.2f;
+    [Tooltip("Space each obstacle needs beside its neighbour, in world units.")]
+    [SerializeField]
+    private float obstacleSpacing = 0.9f;
     [Tooltip("How far the gap may move between rows, in world units.")]
     [SerializeField]
-    private float maxGapShift = 2.6f;
+    private float maxGapShift = 2.3f;
 
     [Header("Difficulty")]
     [Tooltip("Obstacles in a row at level 1.")]
     [SerializeField]
     private int minObstaclesPerRow = 1;
-    [Tooltip("Obstacles in a row once the game is at full difficulty. Two is the most that fits beside a fair gap.")]
+    [Tooltip("Obstacles in a row at full difficulty.")]
     [SerializeField]
-    private int maxObstaclesPerRow = 2;
-    [Tooltip("Level at which rows reach the maximum count.")]
+    private int maxObstaclesPerRow = 3;
+    [Tooltip("Level at which the gap and the row count reach their hardest.")]
     [SerializeField]
-    private int levelAtMaxDensity = 8;
+    private int levelAtMaxDensity = 12;
 
     [Header("Look")]
     [Tooltip("Obstacles spawn at a random angle. Turn off for upright sprites.")]
@@ -68,16 +71,19 @@ public class SpawnObstacles : MonoBehaviour
     [SerializeField]
     private float astronautSpeedEstimate = 7f;
 
+    /// <summary>Narrowest gap the astronaut can still pass through.</summary>
+    private const float MinimumPassableGap = 1.05f;
+
     private ScoreManager scoreManager;
     private float spawnTime;
     private float gapCentre;
-    private bool gapInitialised;
+    private float gapWidth;
     private readonly List<float> takenX = new List<float>();
 
     private void Start()
     {
+        gapWidth = gapWidthAtStart;
         gapCentre = Random.Range(minX + gapWidth * 0.5f, maxX - gapWidth * 0.5f);
-        gapInitialised = true;
         SetNextSpawnTime();
     }
 
@@ -124,21 +130,80 @@ public class SpawnObstacles : MonoBehaviour
             return;
         }
 
+        float difficulty = DifficultyFraction();
+
+        gapWidth = Mathf.Max(MinimumPassableGap,
+                             Mathf.Lerp(gapWidthAtStart, gapWidthAtMax, difficulty));
+
         MoveGap();
 
-        int count = ObstaclesThisRow();
         takenX.Clear();
+        PlaceRow(ObstaclesThisRow(difficulty));
+
+        for (int i = 0; i < takenX.Count; i++)
+        {
+            SpawnOne(takenX[i]);
+        }
+    }
+
+    /// <summary>
+    /// Fills the space either side of the gap, spreading the obstacles evenly
+    /// rather than dropping them at random. Random placement kept failing to
+    /// find room for the last obstacle, so late rows never reached their
+    /// intended density.
+    /// </summary>
+    private void PlaceRow(int wanted)
+    {
+        float clearance = obstacleSpacing * 0.5f;
+        float leftEnd = gapCentre - gapWidth * 0.5f - clearance;
+        float rightStart = gapCentre + gapWidth * 0.5f + clearance;
+
+        float leftRoom = Mathf.Max(0f, leftEnd - minX);
+        float rightRoom = Mathf.Max(0f, maxX - rightStart);
+
+        int leftCapacity = Mathf.FloorToInt(leftRoom / obstacleSpacing);
+        int rightCapacity = Mathf.FloorToInt(rightRoom / obstacleSpacing);
+        int capacity = leftCapacity + rightCapacity;
+
+        if (capacity <= 0)
+        {
+            return;
+        }
+
+        int count = Mathf.Min(wanted, capacity);
+
+        // Split between the two sides in proportion to the room each has,
+        // then hand any leftover to whichever side can still take it.
+        int onLeft = capacity > 0 ? Mathf.RoundToInt(count * (leftCapacity / (float)capacity)) : 0;
+        onLeft = Mathf.Clamp(onLeft, 0, leftCapacity);
+        int onRight = count - onLeft;
+
+        if (onRight > rightCapacity)
+        {
+            onLeft += onRight - rightCapacity;
+            onRight = rightCapacity;
+            onLeft = Mathf.Min(onLeft, leftCapacity);
+        }
+
+        AddEvenlySpaced(minX, leftEnd, onLeft);
+        AddEvenlySpaced(rightStart, maxX, onRight);
+    }
+
+    /// <summary>Spreads count obstacles across a span, with a little scatter.</summary>
+    private void AddEvenlySpaced(float from, float to, int count)
+    {
+        if (count <= 0 || to <= from)
+        {
+            return;
+        }
+
+        float step = (to - from) / count;
+        float wobble = Mathf.Max(0f, (step - obstacleSpacing) * 0.5f);
 
         for (int i = 0; i < count; i++)
         {
-            float x;
-            if (!TryFindFreeX(out x))
-            {
-                break;
-            }
-
-            takenX.Add(x);
-            SpawnOne(x);
+            float centre = from + step * (i + 0.5f);
+            takenX.Add(Mathf.Clamp(centre + Random.Range(-wobble, wobble), from, to));
         }
     }
 
@@ -156,61 +221,15 @@ public class SpawnObstacles : MonoBehaviour
             return;
         }
 
-        if (!gapInitialised)
-        {
-            gapCentre = Random.Range(low, high);
-            gapInitialised = true;
-            return;
-        }
-
         float target = Random.Range(low, high);
         gapCentre = Mathf.Clamp(target, gapCentre - maxGapShift, gapCentre + maxGapShift);
         gapCentre = Mathf.Clamp(gapCentre, low, high);
     }
 
-    private int ObstaclesThisRow()
+    private int ObstaclesThisRow(float difficulty)
     {
-        int high = Mathf.RoundToInt(Mathf.Lerp(minObstaclesPerRow, maxObstaclesPerRow, DifficultyFraction()));
+        int high = Mathf.RoundToInt(Mathf.Lerp(minObstaclesPerRow, maxObstaclesPerRow, difficulty));
         return Random.Range(minObstaclesPerRow, Mathf.Max(minObstaclesPerRow, high) + 1);
-    }
-
-    /// <summary>
-    /// Picks a spot outside the gap that no obstacle in this row uses yet.
-    /// </summary>
-    private bool TryFindFreeX(out float x)
-    {
-        float gapLow = gapCentre - gapWidth * 0.5f;
-        float gapHigh = gapCentre + gapWidth * 0.5f;
-
-        // Candidate slots across the row, then filter by the gap and neighbours.
-        for (int attempt = 0; attempt < 24; attempt++)
-        {
-            float candidate = Random.Range(minX, maxX);
-
-            if (candidate > gapLow - obstacleWidth * 0.5f && candidate < gapHigh + obstacleWidth * 0.5f)
-            {
-                continue;
-            }
-
-            bool clashes = false;
-            for (int i = 0; i < takenX.Count; i++)
-            {
-                if (Mathf.Abs(candidate - takenX[i]) < obstacleWidth)
-                {
-                    clashes = true;
-                    break;
-                }
-            }
-
-            if (!clashes)
-            {
-                x = candidate;
-                return true;
-            }
-        }
-
-        x = 0f;
-        return false;
     }
 
     private void SpawnOne(float x)
@@ -240,6 +259,7 @@ public class SpawnObstacles : MonoBehaviour
 
         Gizmos.color = Color.green;
         Vector3 gap = centre + Vector3.right * gapCentre;
-        Gizmos.DrawLine(gap + Vector3.left * (gapWidth * 0.5f), gap + Vector3.right * (gapWidth * 0.5f));
+        float half = (gapWidth > 0f ? gapWidth : gapWidthAtStart) * 0.5f;
+        Gizmos.DrawLine(gap + Vector3.left * half, gap + Vector3.right * half);
     }
 }

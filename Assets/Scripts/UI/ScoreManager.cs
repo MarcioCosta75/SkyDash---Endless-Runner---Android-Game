@@ -167,8 +167,19 @@ public class ScoreManager : MonoBehaviour
 
     public void AddStar()
     {
-        starCounter++;
-        totalStarCounter++;
+        AddStars(1);
+    }
+
+    /// <summary>Adds several stars at once, used for the alien kill bonus.</summary>
+    public void AddStars(int amount)
+    {
+        if (amount <= 0)
+        {
+            return;
+        }
+
+        starCounter += amount;
+        totalStarCounter += amount;
         UpdateStarTexts();
         Pulse(starCounterText);
     }

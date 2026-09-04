@@ -1,23 +1,47 @@
-using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// Brings the alien enemy in after a delay, and brings it back for another
-/// pass once the player has killed it.
+/// Decides when the alien shows up.
+///
+/// It arrives on reaching a new level rather than on a bare timer, so it lands
+/// with the level banner and reads as a milestone instead of an interruption.
+/// Each visit is a wave, and the wave number makes the alien tougher, so the
+/// fourth fight is not the first fight again.
+///
+/// While the alien is on screen the obstacle spawner is off, which makes the
+/// fight its own phase rather than a second thing to dodge.
 /// </summary>
 public class EnemyManager : MonoBehaviour
 {
     [SerializeField]
     private GameObject alienEnemy;
-    [Tooltip("Obstacle spawner that runs while no enemy is on screen.")]
+    [Tooltip("Obstacle spawner that runs while no alien is on screen.")]
     [SerializeField]
     private GameObject spawnPoint;
-    [Tooltip("Seconds before the enemy first appears.")]
+
+    [Header("When it appears")]
+    [Tooltip("First level that summons an alien.")]
     [SerializeField]
-    private float activationDelay = 45f;
-    [Tooltip("Seconds between one enemy dying and the next arriving.")]
+    private int firstBossLevel = 2;
+    [Tooltip("Levels between one alien and the next.")]
     [SerializeField]
-    private float respawnDelay = 55f;
+    private int levelsBetweenBosses = 2;
+
+    private int wavesSeen;
+    private bool alienActive;
+
+    /// <summary>How many aliens have arrived this run.</summary>
+    public int WavesSeen => wavesSeen;
+
+    private void OnEnable()
+    {
+        ScoreManager.LevelChanged += OnLevelChanged;
+    }
+
+    private void OnDisable()
+    {
+        ScoreManager.LevelChanged -= OnLevelChanged;
+    }
 
     private void Start()
     {
@@ -26,59 +50,68 @@ public class EnemyManager : MonoBehaviour
         if (alienEnemy != null)
         {
             alienEnemy.SetActive(false);
-            StartCoroutine(EnemyCycle());
         }
     }
 
-    private IEnumerator EnemyCycle()
+    private void Update()
     {
-        yield return new WaitForSeconds(activationDelay);
-
-        while (true)
-        {
-            ActivateAlienEnemy();
-
-            // Wait out the whole visit before counting down to the next one.
-            // activeInHierarchy, not activeSelf: on game over the enemy's
-            // parent is switched off while its own flag stays true, and this
-            // loop would never end.
-            while (alienEnemy != null && alienEnemy.activeInHierarchy)
-            {
-                yield return null;
-            }
-
-            SetSpawnPointActive(true);
-
-            if (alienEnemy == null)
-            {
-                yield break;
-            }
-
-            yield return new WaitForSeconds(respawnDelay);
-        }
-    }
-
-    /// <summary>Ends the cycle, so nothing spawns after the run is over.</summary>
-    public void StopCycle()
-    {
-        StopAllCoroutines();
-    }
-
-    private void ActivateAlienEnemy()
-    {
-        if (alienEnemy == null)
+        if (!alienActive || alienEnemy == null)
         {
             return;
+        }
+
+        // The alien switches itself off when it dies or retreats.
+        if (!alienEnemy.activeInHierarchy)
+        {
+            alienActive = false;
+            SetSpawnPointActive(true);
+        }
+    }
+
+    private void OnLevelChanged(int level)
+    {
+        if (alienEnemy == null || alienActive || level < firstBossLevel)
+        {
+            return;
+        }
+
+        int step = Mathf.Max(1, levelsBetweenBosses);
+        if ((level - firstBossLevel) % step != 0)
+        {
+            return;
+        }
+
+        Summon();
+    }
+
+    private void Summon()
+    {
+        wavesSeen++;
+
+        // The spawner first: EnemyHealth asks it how many hit points this wave
+        // should have, so it has to know the wave number by then.
+        MissileSpawner spawner = alienEnemy.GetComponent<MissileSpawner>();
+        if (spawner != null)
+        {
+            spawner.ConfigureForWave(wavesSeen);
         }
 
         EnemyHealth health = alienEnemy.GetComponent<EnemyHealth>();
         if (health != null)
         {
-            health.ResetHealth();
+            health.ConfigureForWave(wavesSeen);
         }
 
-        alienEnemy.SetActive(true);
+        alienActive = true;
         SetSpawnPointActive(false);
+        alienEnemy.SetActive(true);
+    }
+
+    /// <summary>Stops any further aliens, called on game over.</summary>
+    public void StopCycle()
+    {
+        ScoreManager.LevelChanged -= OnLevelChanged;
+        alienActive = false;
     }
 
     private void SetSpawnPointActive(bool active)

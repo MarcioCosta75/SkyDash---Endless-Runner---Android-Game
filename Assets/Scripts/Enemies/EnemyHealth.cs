@@ -5,6 +5,7 @@ using UnityEngine.UI;
 /// <summary>Hit points for the alien enemy, with its health bar.</summary>
 public class EnemyHealth : MonoBehaviour
 {
+    [Tooltip("Hit points on the first wave. Later waves add more.")]
     [SerializeField]
     private int maxHealth = 100;
     [SerializeField]
@@ -14,8 +15,10 @@ public class EnemyHealth : MonoBehaviour
     public event Action Died;
 
     private int currentHealth;
+    private int waveHealth;
 
     public bool IsAlive => currentHealth > 0;
+    public int MaxHealth => waveHealth > 0 ? waveHealth : maxHealth;
 
     private void OnEnable()
     {
@@ -25,8 +28,24 @@ public class EnemyHealth : MonoBehaviour
     /// <summary>Refills health, so the enemy can be reused on a later wave.</summary>
     public void ResetHealth()
     {
-        currentHealth = maxHealth;
+        currentHealth = MaxHealth;
         UpdateSlider();
+    }
+
+    /// <summary>
+    /// Sets the hit points for this visit. Later waves are tougher, but only
+    /// modestly: most of the extra difficulty comes from the alien being
+    /// quicker and firing more, not from being a bigger bag of health that
+    /// the player has no ammunition to empty.
+    /// </summary>
+    public void ConfigureForWave(int waveNumber)
+    {
+        MissileSpawner spawner = GetComponent<MissileSpawner>();
+        waveHealth = spawner != null
+            ? spawner.HealthForWave(maxHealth)
+            : maxHealth;
+
+        ResetHealth();
     }
 
     public void TakeDamage(int damageAmount)
@@ -50,7 +69,7 @@ public class EnemyHealth : MonoBehaviour
     {
         if (healthSlider != null)
         {
-            healthSlider.maxValue = maxHealth;
+            healthSlider.maxValue = MaxHealth;
             healthSlider.value = currentHealth;
         }
     }

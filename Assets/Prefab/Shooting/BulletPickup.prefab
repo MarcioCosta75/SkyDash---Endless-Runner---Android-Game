@@ -160,5 +160,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 402f317313a965d45a9408ce90a6d3b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ammoAmount: 2
+  ammoAmount: 4
   pickupSound: {fileID: 8300000, guid: 8de55e1a0f38a3240bc3e05b4a1d0320, type: 3}
