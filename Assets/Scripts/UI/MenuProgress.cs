@@ -22,7 +22,7 @@ public class MenuProgress : MonoBehaviour
     [Tooltip("Height on the screen, 0 at the bottom and 1 at the top.")]
     [Range(0f, 1f)]
     [SerializeField]
-    private float screenHeight = 0.245f;
+    private float screenHeight = 0.135f;
 
     private void Start()
     {

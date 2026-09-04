@@ -17,12 +17,6 @@ public class Health : MonoBehaviour
     [SerializeField]
     private float invulnerabilityDuration = 1.2f;
 
-    [Tooltip("Width the heart row may use, in canvas units, measured from the "
-             + "first heart's left edge. The score sits at the centre, so this "
-             + "has to stop short of it.")]
-    [SerializeField]
-    private float rowWidth = 300f;
-
     [Header("Heart display")]
     [SerializeField]
     private Image[] hearts;
@@ -106,29 +100,33 @@ public class Health : MonoBehaviour
     }
 
     /// <summary>
-    /// Lays the row out inside the space it actually has, shrinking the icons
-    /// when there are more of them.
+    /// Places the hearts inside their container, left to right.
     ///
-    /// The first attempt spread them across the width the three authored
-    /// hearts spanned, 692 units, which reaches well past the score and put
-    /// the fourth and fifth hearts on top of it. The row gets the strip from
-    /// the left margin to just clear of the score instead.
+    /// The hearts are children of the Health group, so their anchors are
+    /// relative to that group's rect, not to the screen. An earlier attempt
+    /// anchored them to the screen instead, which is why the row drifted off
+    /// on its own. The group owns where the row sits; this owns the spacing
+    /// inside it, and shrinks the icons when there are more of them.
     /// </summary>
     private void LayOutHearts()
     {
+        RectTransform container = transform as RectTransform;
         RectTransform first = hearts[0] != null ? hearts[0].rectTransform : null;
         if (first == null)
         {
             return;
         }
 
-        float authoredSize = first.sizeDelta.x;
-        float step = rowWidth / hearts.Length;
-        float size = Mathf.Min(authoredSize, step * 0.92f);
+        container = first.parent as RectTransform;
+        if (container == null)
+        {
+            return;
+        }
 
-        // Positions are relative to the first heart's anchor, so the strip is
-        // measured from where that heart already sits.
-        float rowStart = first.anchoredPosition.x - authoredSize * 0.5f;
+        float width = container.rect.width;
+        float height = container.rect.height;
+        float step = width / hearts.Length;
+        float size = Mathf.Min(height, step * 0.94f);
 
         for (int i = 0; i < hearts.Length; i++)
         {
@@ -138,12 +136,14 @@ public class Health : MonoBehaviour
             }
 
             RectTransform rect = hearts[i].rectTransform;
-            rect.anchorMin = first.anchorMin;
-            rect.anchorMax = first.anchorMax;
-            rect.pivot = first.pivot;
+
+            // Anchored to the container's left edge, so the row starts at the
+            // margin whatever the screen width is.
+            rect.anchorMin = new Vector2(0f, 0.5f);
+            rect.anchorMax = new Vector2(0f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
             rect.sizeDelta = new Vector2(size, size);
-            rect.anchoredPosition = new Vector2(rowStart + step * (i + 0.5f),
-                                                first.anchoredPosition.y);
+            rect.anchoredPosition = new Vector2(step * (i + 0.5f), 0f);
         }
     }
 

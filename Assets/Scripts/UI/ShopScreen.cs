@@ -18,7 +18,7 @@ public class ShopScreen : MonoBehaviour
 
     private static readonly Color Ink = new Color(0.96f, 0.96f, 1f);
     private static readonly Color Dim = new Color(0.72f, 0.72f, 0.82f);
-    private static readonly Color Panel = new Color(0.09f, 0.07f, 0.18f, 0.97f);
+    private static readonly Color Panel = new Color(0.07f, 0.06f, 0.14f, 1f);
     private static readonly Color RowBack = new Color(1f, 1f, 1f, 0.06f);
     private static readonly Color Buyable = new Color(0.32f, 0.72f, 0.42f);
     private static readonly Color TooDear = new Color(0.3f, 0.3f, 0.38f);
@@ -68,7 +68,7 @@ public class ShopScreen : MonoBehaviour
     private void BuildOpenButton(Transform parent)
     {
         // Below the Settings button, which sits at about 30 percent height.
-        Image back = MakeImage(parent, "ShopButton", new Vector2(0.5f, 0.222f),
+        Image back = MakeImage(parent, "ShopButton", new Vector2(0.5f, 0.21875f),
                                new Vector2(600f, 100f), new Color(0.2f, 0.16f, 0.34f, 0.95f));
         Button button = back.gameObject.AddComponent<Button>();
         button.targetGraphic = back;
@@ -86,6 +86,15 @@ public class ShopScreen : MonoBehaviour
                                new Vector2(CanvasWidth, CanvasHeight), Panel);
         panel = back.gameObject;
 
+        // Stretched to the full canvas rather than sized to the reference
+        // resolution, so it covers the whole screen whatever its shape. It was
+        // letting the menu show through underneath.
+        RectTransform panelRect = back.rectTransform;
+        panelRect.anchorMin = Vector2.zero;
+        panelRect.anchorMax = Vector2.one;
+        panelRect.offsetMin = Vector2.zero;
+        panelRect.offsetMax = Vector2.zero;
+
         TextMeshProUGUI title = MakeText(panel.transform, "Title", new Vector2(0.5f, 0.88f),
                                           new Vector2(900f, 130f), 96f, Ink);
         title.text = "Shop";
@@ -94,8 +103,8 @@ public class ShopScreen : MonoBehaviour
                                  new Vector2(900f, 80f), 52f, Dim);
 
         // One row per upgrade, stacked downward from just under the balance.
-        float top = 0.735f;
-        float rowStep = 0.098f;
+        float top = 0.715f;
+        float rowStep = 0.105f;
 
         for (int i = 0; i < PlayerUpgrades.Catalogue.Length; i++)
         {
