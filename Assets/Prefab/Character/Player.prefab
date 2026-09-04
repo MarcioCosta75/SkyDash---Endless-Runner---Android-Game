@@ -128,7 +128,7 @@ MonoBehaviour:
   characterObject: {fileID: 3871145421728909478}
   isMagnet: 0
   magnetDuration: 20
-  moveSpeed: 5
+  moveSpeed: 4
   movementDistance: 0.5
   collisionSound: {fileID: 0}
 --- !u!114 &2785091019433843751
