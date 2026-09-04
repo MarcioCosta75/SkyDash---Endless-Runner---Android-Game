@@ -27647,7 +27647,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameoverpanel: {fileID: 529799906}
   spawnObstacles: {fileID: 1528204241}
-  backgroundMusic: {fileID: 1598387811}
   starsParticleSystem: {fileID: 1369860671}
   deathSoundEffect: {fileID: 2009203276}
   objectToDeactivate1: {fileID: 195775596}

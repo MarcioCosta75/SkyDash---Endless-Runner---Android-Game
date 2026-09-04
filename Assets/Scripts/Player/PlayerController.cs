@@ -42,6 +42,7 @@ public class PlayerController : MonoBehaviour
     private SpriteRenderer characterRenderer;
     private float targetPosition;
     private float magnetTimer;
+    private float stepDistance;
 
     public bool IsMagnetActive => magnetTimer > 0f;
     public Vector3 Position => characterTransform != null ? characterTransform.position : transform.position;
@@ -71,6 +72,9 @@ public class PlayerController : MonoBehaviour
         characterTransform = characterObject.transform;
         characterRenderer = characterObject.GetComponent<SpriteRenderer>();
         targetPosition = characterTransform.position.x;
+
+        // The settings scene stores this on the device.
+        stepDistance = movementDistance * GameSettings.TouchSensitivity;
 
         if (buttonLeft != null)
         {
@@ -123,13 +127,13 @@ public class PlayerController : MonoBehaviour
 
     private void MoveLeft()
     {
-        targetPosition = characterTransform.position.x - movementDistance;
+        targetPosition = characterTransform.position.x - stepDistance;
         FaceDirection(-1f);
     }
 
     private void MoveRight()
     {
-        targetPosition = characterTransform.position.x + movementDistance;
+        targetPosition = characterTransform.position.x + stepDistance;
         FaceDirection(1f);
     }
 

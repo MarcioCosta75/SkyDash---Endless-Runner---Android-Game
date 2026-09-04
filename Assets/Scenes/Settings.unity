@@ -1479,7 +1479,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sensitivitySlider: {fileID: 149246401}
-  playerController: {fileID: 2011071118301247902, guid: c8a11417f7006f0419e9aff5c9b3aed3, type: 3}
 --- !u!4 &2039715645
 Transform:
   m_ObjectHideFlags: 0

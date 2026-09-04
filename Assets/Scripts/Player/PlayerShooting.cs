@@ -27,8 +27,11 @@ public class PlayerShooting : MonoBehaviour
     [SerializeField]
     private GameObject alienEnemy;
 
+    private const float TargetSearchInterval = 0.25f;
+
     private int currentProjectiles;
     private bool buttonEnabled = true;
+    private float nextTargetSearch;
 
     public int CurrentProjectiles => currentProjectiles;
 
@@ -47,7 +50,12 @@ public class PlayerShooting : MonoBehaviour
 
     private void Update()
     {
-        RefreshButtonState();
+        // Searching by tag is not free, and the answer changes rarely.
+        if (Time.time >= nextTargetSearch)
+        {
+            nextTargetSearch = Time.time + TargetSearchInterval;
+            RefreshButtonState();
+        }
     }
 
     /// <summary>The live enemy, or null when none is on screen.</summary>

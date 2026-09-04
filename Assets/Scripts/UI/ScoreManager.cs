@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using TMPro;
 
@@ -38,6 +39,9 @@ public class ScoreManager : MonoBehaviour
     [Tooltip("Highest speed multiplier, so the game stays playable.")]
     [SerializeField]
     private float maxSpeedMultiplier = 4f;
+
+    /// <summary>Raised when the run reaches a new level.</summary>
+    public static event Action<int> LevelChanged;
 
     private const string HighscoreKey = "highscore_metres";
     private const string TotalStarCounterKey = "totalStarCounter";
@@ -112,6 +116,8 @@ public class ScoreManager : MonoBehaviour
         {
             speedText.text = "Speed x" + multiplier.ToString("0.0");
         }
+
+        LevelChanged?.Invoke(level);
     }
 
     /// <summary>Stops the score climbing, called on game over.</summary>

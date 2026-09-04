@@ -35,6 +35,9 @@ public class Health : MonoBehaviour
 
     private void Awake()
     {
+        // A max of zero would mean a player that can never be hurt and never
+        // dies, so the run would have no end.
+        maxHealth = Mathf.Max(1, maxHealth);
         health = maxHealth;
     }
 
