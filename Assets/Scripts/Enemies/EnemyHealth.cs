@@ -23,6 +23,25 @@ public class EnemyHealth : MonoBehaviour
     private void OnEnable()
     {
         ResetHealth();
+        ShowBar(true);
+    }
+
+    private void OnDisable()
+    {
+        ShowBar(false);
+    }
+
+    /// <summary>
+    /// The bar lives on the HUD, not on this object, so it does not switch
+    /// off with the alien. A full health bar sitting there with no enemy on
+    /// screen reads as a bug.
+    /// </summary>
+    private void ShowBar(bool visible)
+    {
+        if (healthSlider != null && healthSlider.gameObject.activeSelf != visible)
+        {
+            healthSlider.gameObject.SetActive(visible);
+        }
     }
 
     /// <summary>Refills health, so the enemy can be reused on a later wave.</summary>
