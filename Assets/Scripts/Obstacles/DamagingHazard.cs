@@ -16,6 +16,9 @@ public class DamagingHazard : MonoBehaviour
     [Tooltip("Destroyed by the shield bubble as well as by the player.")]
     [SerializeField]
     private bool destroyedByMagneticField = true;
+    [Tooltip("Destroyed by the player's shots.")]
+    [SerializeField]
+    private bool destroyedByShots = true;
 
     private bool spent;
 
@@ -44,6 +47,12 @@ public class DamagingHazard : MonoBehaviour
         }
 
         if (destroyedByMagneticField && collision.CompareTag("MagneticField"))
+        {
+            Impact();
+            return;
+        }
+
+        if (destroyedByShots && collision.CompareTag("ProjectileSharp"))
         {
             Impact();
         }

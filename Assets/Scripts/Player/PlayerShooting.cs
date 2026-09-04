@@ -27,7 +27,7 @@ public class PlayerShooting : MonoBehaviour
     [SerializeField]
     private GameObject alienEnemy;
 
-    private const float TargetSearchInterval = 0.25f;
+    private const float TargetSearchInterval = 0.15f;
 
     private int currentProjectiles;
     private bool buttonEnabled = true;
@@ -74,6 +74,11 @@ public class PlayerShooting : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Greyed out only when the magazine is empty, which is a state the player
+    /// can fix by collecting a pickup. It stays usable the rest of the time,
+    /// because a shot breaks obstacles as well as hurting the alien.
+    /// </summary>
     private void RefreshButtonState()
     {
         if (shootButton == null)
@@ -81,23 +86,22 @@ public class PlayerShooting : MonoBehaviour
             return;
         }
 
-        bool canFire = currentProjectiles > 0 && FindTarget() != null;
-        if (canFire != buttonEnabled)
+        bool haveAmmo = currentProjectiles > 0;
+        if (haveAmmo != buttonEnabled)
         {
-            buttonEnabled = canFire;
-            shootButton.interactable = canFire;
+            buttonEnabled = haveAmmo;
+            shootButton.interactable = haveAmmo;
         }
     }
 
     private void OnShootButtonClick()
     {
-        GameObject target = FindTarget();
-        if (currentProjectiles <= 0 || target == null)
+        if (currentProjectiles <= 0)
         {
             return;
         }
 
-        Shoot(target);
+        Shoot(FindTarget());
         currentProjectiles--;
         UpdateBulletsText();
         RefreshButtonState();
@@ -111,7 +115,12 @@ public class PlayerShooting : MonoBehaviour
         }
 
         GameObject projectile = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
-        Vector2 direction = ((Vector2)(target.transform.position - projectile.transform.position)).normalized;
+
+        // Straight up when there is no alien, which is when the shot is being
+        // used to clear an obstacle.
+        Vector2 direction = target != null
+            ? ((Vector2)(target.transform.position - projectile.transform.position)).normalized
+            : Vector2.up;
 
         // The projectile owns its movement. Setting the velocity here as well
         // made the shot travel at both speeds added together.

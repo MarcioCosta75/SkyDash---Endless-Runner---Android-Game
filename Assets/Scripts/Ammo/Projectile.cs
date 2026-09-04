@@ -131,6 +131,14 @@ public class Projectile : MonoBehaviour
             return;
         }
 
+        // Spent on an obstacle, but the obstacle plays its own effect and
+        // sound, so this one does not add a second explosion on top.
+        if (col.CompareTag("Obstacle") || col.CompareTag("Missile"))
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         if (col.CompareTag("Border"))
         {
             Destroy(gameObject);
