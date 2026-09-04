@@ -36,9 +36,11 @@ public class ScoreManager : MonoBehaviour
     [Tooltip("Distance in metres needed to reach the next level.")]
     [SerializeField]
     private float metresPerLevel = 250f;
-    [Tooltip("Highest speed multiplier, so the game stays playable.")]
+    [Tooltip("Highest speed multiplier. 3 matches the fastest the game reached " +
+             "before the level ladder was replaced. Raise it to keep the " +
+             "difficulty climbing for longer.")]
     [SerializeField]
-    private float maxSpeedMultiplier = 4f;
+    private float maxSpeedMultiplier = 3f;
 
     /// <summary>Raised when the run reaches a new level.</summary>
     public static event Action<int> LevelChanged;
