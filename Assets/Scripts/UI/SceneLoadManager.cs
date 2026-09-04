@@ -13,12 +13,6 @@ public class SceneLoadManager : MonoBehaviour
         SceneManager.LoadScene(sceneIndex);
     }
 
-    public void LoadSceneByName(string sceneName)
-    {
-        PauseMenu.ResetPauseState();
-        SceneManager.LoadScene(sceneName);
-    }
-
     public void QuitGame()
     {
         Application.Quit();

@@ -92,9 +92,4 @@ public class BackgroundMusic : MonoBehaviour
             instance.audioSource.Stop();
         }
     }
-
-    public static bool IsPlaying()
-    {
-        return instance != null && instance.audioSource != null && instance.audioSource.isPlaying;
-    }
 }

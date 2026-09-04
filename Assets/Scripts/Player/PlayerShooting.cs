@@ -33,8 +33,6 @@ public class PlayerShooting : MonoBehaviour
     private bool buttonEnabled = true;
     private float nextTargetSearch;
 
-    public int CurrentProjectiles => currentProjectiles;
-
     private void Start()
     {
         currentProjectiles = maxProjectiles;

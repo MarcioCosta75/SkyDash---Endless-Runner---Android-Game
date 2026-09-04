@@ -67,7 +67,6 @@ public class ScoreManager : MonoBehaviour
 
     public int Level => currentLevel;
     public float Score => score;
-    public int StarsThisRun => starCounter;
 
     private void Start()
     {

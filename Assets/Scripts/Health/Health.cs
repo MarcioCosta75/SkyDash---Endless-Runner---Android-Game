@@ -43,7 +43,6 @@ public class Health : MonoBehaviour
 
     public int Current => health;
     public int Max => maxHealth;
-    public bool IsDead => isDead;
     public bool IsInvulnerable => Time.time < invulnerableUntil;
 
     private void Awake()

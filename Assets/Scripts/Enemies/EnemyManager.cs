@@ -30,9 +30,6 @@ public class EnemyManager : MonoBehaviour
     private int wavesSeen;
     private bool alienActive;
 
-    /// <summary>How many aliens have arrived this run.</summary>
-    public int WavesSeen => wavesSeen;
-
     private void OnEnable()
     {
         ScoreManager.LevelChanged += OnLevelChanged;
