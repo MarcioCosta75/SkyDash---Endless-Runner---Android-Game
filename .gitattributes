@@ -1,0 +1,41 @@
+# Normalise line endings so Unity YAML does not churn between machines.
+* text=auto eol=lf
+
+# Unity text assets. Marked as text with a merge driver hint.
+*.cs        text diff=csharp
+*.shader    text
+*.cginc     text
+*.hlsl      text
+*.unity     text merge=unityyamlmerge eol=lf
+*.prefab    text merge=unityyamlmerge eol=lf
+*.asset     text merge=unityyamlmerge eol=lf
+*.mat       text merge=unityyamlmerge eol=lf
+*.anim      text merge=unityyamlmerge eol=lf
+*.controller text merge=unityyamlmerge eol=lf
+*.physicMaterial2D text merge=unityyamlmerge eol=lf
+*.meta      text eol=lf
+*.json      text eol=lf
+*.md        text eol=lf
+*.txt       text eol=lf
+*.sh        text eol=lf
+
+# Binary assets. Never touch these.
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.psd       binary
+*.tif       binary
+*.tiff      binary
+*.tga       binary
+*.otf       binary
+*.ttf       binary
+*.wav       binary
+*.mp3       binary
+*.ogg       binary
+*.flac      binary
+*.aif       binary
+*.fbx       binary
+*.unitypackage binary
+*.apk       binary
+*.aab       binary

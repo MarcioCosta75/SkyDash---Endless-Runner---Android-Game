@@ -8,9 +8,8 @@ TagManager:
   - Obstacle
   - Star
   - Magnet
-  - MagnetPosition
   - Heart
-  - Missle
+  - Missile
   - MagneticField
   - ProjectileSharp
   - AlienEnemy

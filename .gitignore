@@ -70,3 +70,14 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Burst debug information produced by Android builds. Named DoNotShip by Unity.
+/[Ss]ky[Dd]ash_BurstDebugInformation_DoNotShip/
+/[Ss]pace[Dd]ash_BurstDebugInformation_DoNotShip/
+*_BurstDebugInformation_DoNotShip/
+
+# Build reports
+/[Bb]uild[Rr]eports/
+
+# Local compile-check output
+/skydash-build/
