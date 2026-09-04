@@ -1,23 +1,32 @@
 using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// Moves the ship sideways between the screen edges and owns the magnet
-/// power-up timer. The two on-screen buttons nudge a target position and the
-/// ship slides towards it.
+/// Steers the ship sideways and owns the magnet power-up timer.
+///
+/// There are two ways to steer, and both are always available:
+/// dragging a finger anywhere on the play area moves the ship by the same
+/// distance the finger travelled, and holding the left or right button moves
+/// it at a steady speed. Holding matters: Unity's Button only fires on
+/// release, so the old one-tap-one-step scheme meant tapping repeatedly to
+/// cross the screen.
 /// </summary>
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
     [SerializeField]
     private GameObject characterObject;
-    [Tooltip("Speed factor. Sideways speed is this times movementDistance.")]
+    [Tooltip("Speed while a movement button is held, in world units per second.")]
     [SerializeField]
-    private float moveSpeed = 5f;
-    [Tooltip("How far one button press moves the ship, in world units.")]
+    private float buttonMoveSpeed = 7f;
+    [Tooltip("How far the ship travels per unit of finger travel. 1 is one to one.")]
     [SerializeField]
-    private float movementDistance = 0.8f;
+    private float dragSensitivity = 1.25f;
+    [Tooltip("Safety limit on drag speed, in world units per second.")]
+    [SerializeField]
+    private float maxDragSpeed = 24f;
 
     [Header("Controls")]
     [SerializeField]
@@ -40,9 +49,15 @@ public class PlayerController : MonoBehaviour
     private Camera mainCamera;
     private Transform characterTransform;
     private SpriteRenderer characterRenderer;
-    private float targetPosition;
-    private float stepDistance;
+    private HoldButton holdLeft;
+    private HoldButton holdRight;
+
+    private float sensitivity = 1f;
     private float magnetTimer;
+
+    private bool dragging;
+    private int dragFingerId = -1;
+    private float lastDragScreenX;
 
     public bool IsMagnetActive => magnetTimer > 0f;
     public Vector3 Position => characterTransform != null ? characterTransform.position : transform.position;
@@ -71,27 +86,40 @@ public class PlayerController : MonoBehaviour
 
         characterTransform = characterObject.transform;
         characterRenderer = characterObject.GetComponent<SpriteRenderer>();
-        targetPosition = characterTransform.position.x;
 
-        // The settings scene stores this on the device.
-        stepDistance = movementDistance * GameSettings.TouchSensitivity;
+        // Set in the settings scene, stored on the device.
+        sensitivity = GameSettings.TouchSensitivity;
 
-        if (buttonLeft != null)
+        holdLeft = EnsureHoldButton(buttonLeft);
+        holdRight = EnsureHoldButton(buttonRight);
+    }
+
+    /// <summary>
+    /// Adds the hold reporter to a button if it does not have one, so the
+    /// scene does not need to be wired up by hand for this to work.
+    /// </summary>
+    private static HoldButton EnsureHoldButton(Button button)
+    {
+        if (button == null)
         {
-            buttonLeft.onClick.AddListener(MoveLeft);
+            return null;
         }
 
-        if (buttonRight != null)
-        {
-            buttonRight.onClick.AddListener(MoveRight);
-        }
+        HoldButton hold = button.GetComponent<HoldButton>();
+        return hold != null ? hold : button.gameObject.AddComponent<HoldButton>();
     }
 
     private void Update()
     {
         if (characterTransform != null)
         {
-            MoveTowardsTarget();
+            float move = ReadButtonMovement() + ReadDragMovement();
+            if (move != 0f)
+            {
+                Move(move);
+            }
+
+            ClampToScreen();
         }
 
         if (magnetTimer > 0f)
@@ -100,24 +128,155 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void MoveTowardsTarget()
+    /// <summary>Distance to move this frame from the on-screen buttons.</summary>
+    private float ReadButtonMovement()
     {
-        float currentX = characterTransform.position.x;
+        float direction = 0f;
 
-        // Speed is movementDistance times moveSpeed, as the game was tuned.
-        float step = movementDistance * moveSpeed * Time.deltaTime;
-        float remaining = targetPosition - currentX;
-
-        if (Mathf.Abs(remaining) > step)
+        if (holdLeft != null && holdLeft.IsHeld)
         {
-            characterTransform.Translate(Vector2.right * (Mathf.Sign(remaining) * step), Space.World);
-        }
-        else
-        {
-            characterTransform.Translate(Vector2.right * remaining, Space.World);
+            direction -= 1f;
         }
 
-        ClampToScreen();
+        if (holdRight != null && holdRight.IsHeld)
+        {
+            direction += 1f;
+        }
+
+        // Keyboard, so the game can be played in the editor.
+        direction += Input.GetAxisRaw("Horizontal");
+        direction = Mathf.Clamp(direction, -1f, 1f);
+
+        if (direction != 0f)
+        {
+            FaceDirection(direction);
+        }
+
+        return direction * buttonMoveSpeed * sensitivity * Time.deltaTime;
+    }
+
+    /// <summary>Distance to move this frame from a finger drag.</summary>
+    private float ReadDragMovement()
+    {
+        float screenX;
+        if (!TryGetDragPoint(out screenX))
+        {
+            dragging = false;
+            dragFingerId = -1;
+            return 0f;
+        }
+
+        if (!dragging)
+        {
+            // First frame of a drag only records where the finger started.
+            dragging = true;
+            lastDragScreenX = screenX;
+            return 0f;
+        }
+
+        float deltaPixels = screenX - lastDragScreenX;
+        lastDragScreenX = screenX;
+
+        if (Mathf.Approximately(deltaPixels, 0f))
+        {
+            return 0f;
+        }
+
+        float worldPerPixel = ViewWidth() / Mathf.Max(1, Screen.width);
+        float distance = deltaPixels * worldPerPixel * dragSensitivity * sensitivity;
+
+        // Cap it so a flick cannot jump the ship straight through an obstacle.
+        float limit = maxDragSpeed * Time.deltaTime;
+        distance = Mathf.Clamp(distance, -limit, limit);
+
+        FaceDirection(distance);
+        return distance;
+    }
+
+    /// <summary>
+    /// The horizontal screen position of the active drag, if there is one.
+    /// Touches that started on the UI are ignored so the buttons keep working.
+    /// </summary>
+    private bool TryGetDragPoint(out float screenX)
+    {
+        screenX = 0f;
+
+        if (Input.touchCount > 0)
+        {
+            for (int i = 0; i < Input.touchCount; i++)
+            {
+                Touch touch = Input.GetTouch(i);
+
+                if (dragFingerId == touch.fingerId)
+                {
+                    if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
+                    {
+                        return false;
+                    }
+
+                    screenX = touch.position.x;
+                    return true;
+                }
+
+                if (dragFingerId == -1
+                    && touch.phase == TouchPhase.Began
+                    && !IsOverUI(touch.position, touch.fingerId))
+                {
+                    dragFingerId = touch.fingerId;
+                    screenX = touch.position.x;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Mouse, for testing in the editor.
+        if (Input.GetMouseButton(0))
+        {
+            if (!dragging && IsOverUI(Input.mousePosition, -1))
+            {
+                return false;
+            }
+
+            screenX = Input.mousePosition.x;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsOverUI(Vector2 screenPosition, int pointerId)
+    {
+        if (EventSystem.current == null)
+        {
+            return false;
+        }
+
+        PointerEventData data = new PointerEventData(EventSystem.current)
+        {
+            position = screenPosition,
+            pointerId = pointerId,
+        };
+
+        System.Collections.Generic.List<RaycastResult> hits = new System.Collections.Generic.List<RaycastResult>();
+        EventSystem.current.RaycastAll(data, hits);
+        return hits.Count > 0;
+    }
+
+    private float ViewWidth()
+    {
+        if (mainCamera == null)
+        {
+            mainCamera = Camera.main;
+        }
+
+        return mainCamera != null ? mainCamera.orthographicSize * 2f * mainCamera.aspect : 5.62f;
+    }
+
+    private void Move(float distance)
+    {
+        characterTransform.Translate(Vector2.right * distance, Space.World);
     }
 
     private void ClampToScreen()
@@ -141,29 +300,28 @@ public class PlayerController : MonoBehaviour
         }
 
         Vector3 position = characterTransform.position;
-        position.x = Mathf.Clamp(position.x, leftBound, rightBound);
-        characterTransform.position = position;
-
-        targetPosition = Mathf.Clamp(targetPosition, leftBound, rightBound);
+        float clamped = Mathf.Clamp(position.x, leftBound, rightBound);
+        if (!Mathf.Approximately(clamped, position.x))
+        {
+            position.x = clamped;
+            characterTransform.position = position;
+        }
     }
 
-    private void MoveLeft()
+    private void FaceDirection(float signedAmount)
     {
-        targetPosition = characterTransform.position.x - stepDistance;
-        FaceDirection(-1f);
-    }
+        if (signedAmount == 0f)
+        {
+            return;
+        }
 
-    private void MoveRight()
-    {
-        targetPosition = characterTransform.position.x + stepDistance;
-        FaceDirection(1f);
-    }
-
-    private void FaceDirection(float sign)
-    {
         Vector3 scale = characterTransform.localScale;
-        scale.x = Mathf.Abs(scale.x) * sign;
-        characterTransform.localScale = scale;
+        float wanted = Mathf.Abs(scale.x) * Mathf.Sign(signedAmount);
+        if (!Mathf.Approximately(scale.x, wanted))
+        {
+            scale.x = wanted;
+            characterTransform.localScale = scale;
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

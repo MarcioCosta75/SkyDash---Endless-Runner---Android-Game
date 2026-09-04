@@ -9642,7 +9642,7 @@ RectTransform:
   m_GameObject: {fileID: 758822877}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 5, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 33601186}
@@ -9651,7 +9651,7 @@ RectTransform:
   m_AnchorMin: {x: 0.73700005, y: 0.13777088}
   m_AnchorMax: {x: 0.73700005, y: 0.13777088}
   m_AnchoredPosition: {x: 255.96002, y: -695.4799}
-  m_SizeDelta: {x: 160, y: 30}
+  m_SizeDelta: {x: 220, y: 220}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &758822879
 MonoBehaviour:
@@ -22090,9 +22090,9 @@ MonoBehaviour:
   - {fileID: 1192374480401181285, guid: 3618df338b19ce646b2daa4ff8c06a8f, type: 3}
   - {fileID: 5135334206666499411, guid: 248b848cb2051f94bb3a6729272bad29, type: 3}
   - {fileID: 2821403392237468193, guid: 2904298b0ea23a548826ea3c09858794, type: 3}
-  maxX: 2.3
+  maxX: 2.4
   maxY: 3.4
-  minX: -2.3
+  minX: -2.4
   minY: -3.4
   minTimeBetweenSpawn: 0.7
   maxTimeBetweenSpawn: 1
@@ -23170,7 +23170,7 @@ RectTransform:
   m_GameObject: {fileID: 1609586146}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 5, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 33601186}
@@ -23179,7 +23179,7 @@ RectTransform:
   m_AnchorMin: {x: 0.26374072, y: 0.13777088}
   m_AnchorMax: {x: 0.26374072, y: 0.13777088}
   m_AnchoredPosition: {x: -255.16003, y: -695.4799}
-  m_SizeDelta: {x: 160, y: 30}
+  m_SizeDelta: {x: 220, y: 220}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1609586148
 MonoBehaviour:
