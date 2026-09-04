@@ -17,6 +17,12 @@ public class Health : MonoBehaviour
     [SerializeField]
     private float invulnerabilityDuration = 1.2f;
 
+    [Tooltip("Width the heart row may use, in canvas units, measured from the "
+             + "first heart's left edge. The score sits at the centre, so this "
+             + "has to stop short of it.")]
+    [SerializeField]
+    private float rowWidth = 300f;
+
     [Header("Heart display")]
     [SerializeField]
     private Image[] hearts;
@@ -45,6 +51,7 @@ public class Health : MonoBehaviour
         // A max of zero would mean a player that can never be hurt and never
         // dies, so the run would have no end.
         maxHealth = Mathf.Max(1, maxHealth) + PlayerUpgrades.ExtraHearts;
+        invulnerabilityDuration += PlayerUpgrades.ExtraGraceSeconds;
         health = maxHealth;
     }
 
@@ -64,37 +71,48 @@ public class Health : MonoBehaviour
     /// </summary>
     private void EnsureHeartSlots()
     {
-        if (hearts == null || hearts.Length == 0 || maxHealth <= hearts.Length)
+        if (hearts == null || hearts.Length == 0)
         {
             return;
         }
 
-        Image template = hearts[hearts.Length - 1];
-        if (template == null)
+        if (maxHealth > hearts.Length)
         {
-            return;
+            Image template = hearts[hearts.Length - 1];
+            if (template == null)
+            {
+                return;
+            }
+
+            Image[] grown = new Image[maxHealth];
+            for (int i = 0; i < hearts.Length; i++)
+            {
+                grown[i] = hearts[i];
+            }
+
+            for (int i = hearts.Length; i < maxHealth; i++)
+            {
+                Image copy = Instantiate(template, template.transform.parent);
+                copy.name = "Heart (" + i + ")";
+                grown[i] = copy;
+            }
+
+            hearts = grown;
         }
 
-        Image[] grown = new Image[maxHealth];
-        for (int i = 0; i < hearts.Length; i++)
-        {
-            grown[i] = hearts[i];
-        }
-
-        for (int i = hearts.Length; i < maxHealth; i++)
-        {
-            Image copy = Instantiate(template, template.transform.parent);
-            copy.name = "Heart (" + i + ")";
-            grown[i] = copy;
-        }
-
-        hearts = grown;
+        // Always, not only after an upgrade: the scene positions the first
+        // heart and this owns the spacing of the whole row.
         LayOutHearts();
     }
 
     /// <summary>
-    /// Spreads the row evenly across the space the original three occupied,
-    /// scaling the icons down if that is what it takes to fit.
+    /// Lays the row out inside the space it actually has, shrinking the icons
+    /// when there are more of them.
+    ///
+    /// The first attempt spread them across the width the three authored
+    /// hearts spanned, 692 units, which reaches well past the score and put
+    /// the fourth and fifth hearts on top of it. The row gets the strip from
+    /// the left margin to just clear of the score instead.
     /// </summary>
     private void LayOutHearts()
     {
@@ -105,14 +123,12 @@ public class Health : MonoBehaviour
         }
 
         float authoredSize = first.sizeDelta.x;
-        float rowStart = first.anchoredPosition.x - authoredSize * 0.5f;
-
-        // The three authored hearts span this much, and the row has to stay
-        // inside it or it runs into the score.
-        float rowWidth = authoredSize * 3f + 196f * 2f;
-
         float step = rowWidth / hearts.Length;
-        float size = Mathf.Min(authoredSize, step * 0.95f);
+        float size = Mathf.Min(authoredSize, step * 0.92f);
+
+        // Positions are relative to the first heart's anchor, so the strip is
+        // measured from where that heart already sits.
+        float rowStart = first.anchoredPosition.x - authoredSize * 0.5f;
 
         for (int i = 0; i < hearts.Length; i++)
         {

@@ -37,26 +37,21 @@ public class MenuProgress : MonoBehaviour
     private string Describe()
     {
         float best = PlayerPrefs.GetFloat(HighscoreKey, 0f);
-        int stars = PlayerUpgrades.TotalStars;
+        int stars = PlayerUpgrades.AvailableStars;
 
         // Nothing to boast about yet, so say nothing rather than showing zeroes.
-        if (best <= 0f && stars <= 0)
+        if (best <= 0f && PlayerUpgrades.TotalStarsEarned <= 0)
         {
             return string.Empty;
         }
 
         string line = "Best  " + Mathf.FloorToInt(best) + "m";
-        if (stars > 0)
-        {
-            line += "      Stars  " + stars;
-        }
+        line += "      Stars  " + stars;
 
-        // What the next milestone gives, and how far away it is. This is the
-        // reason to keep collecting stars on a run that is already lost.
-        PlayerUpgrades.Milestone next;
-        if (PlayerUpgrades.TryGetNext(out next))
+        // What the shop can do with them, so the button has a reason.
+        if (!PlayerUpgrades.EverythingOwned)
         {
-            line += "\n" + next.Description + " in " + (next.Stars - stars) + " stars";
+            line += "\nSpend them in the shop";
         }
         else
         {
