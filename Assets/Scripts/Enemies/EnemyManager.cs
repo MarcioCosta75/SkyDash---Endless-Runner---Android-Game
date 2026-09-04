@@ -14,10 +14,10 @@ public class EnemyManager : MonoBehaviour
     private GameObject spawnPoint;
     [Tooltip("Seconds before the enemy first appears.")]
     [SerializeField]
-    private float activationDelay = 100f;
+    private float activationDelay = 45f;
     [Tooltip("Seconds between one enemy dying and the next arriving.")]
     [SerializeField]
-    private float respawnDelay = 90f;
+    private float respawnDelay = 55f;
 
     private void Start()
     {

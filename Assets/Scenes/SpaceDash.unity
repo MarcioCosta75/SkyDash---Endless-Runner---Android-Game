@@ -21137,7 +21137,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   alienEnemy: {fileID: 338798328}
   spawnPoint: {fileID: 1528204240}
-  activationDelay: 100
+  activationDelay: 45
 --- !u!4 &1396705329
 Transform:
   m_ObjectHideFlags: 0
