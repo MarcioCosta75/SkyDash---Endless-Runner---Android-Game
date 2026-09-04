@@ -37,6 +37,13 @@ public abstract class PowerUpTimerBar : MonoBehaviour
     /// <summary>Starts, or restarts, the bar for the given duration.</summary>
     protected void StartCountdown(float duration)
     {
+        // Starting a coroutine on an inactive object throws, and the bar is
+        // switched off with the rest of the HUD on game over.
+        if (!isActiveAndEnabled)
+        {
+            return;
+        }
+
         if (duration <= 0f)
         {
             duration = fillDuration;
