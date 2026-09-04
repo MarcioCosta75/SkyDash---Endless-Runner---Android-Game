@@ -30,13 +30,13 @@ public class ScoreManager : MonoBehaviour
     private CameraMovement cameraMovement;
     [Tooltip("Speed at level 1, in world units per second.")]
     [SerializeField]
-    private float baseSpeed = 2.5f;
+    private float baseSpeed = 2.6f;
     [Tooltip("Fraction of the base speed added by each level.")]
     [SerializeField]
-    private float speedStepPerLevel = 0.2f;
+    private float speedStepPerLevel = 0.28f;
     [Tooltip("Distance in metres needed to reach the next level.")]
     [SerializeField]
-    private float metresPerLevel = 250f;
+    private float metresPerLevel = 120f;
     [Header("Feel")]
     [Tooltip("How much the star counter grows when a star is collected.")]
     [SerializeField]
@@ -49,7 +49,7 @@ public class ScoreManager : MonoBehaviour
              "before the level ladder was replaced. Raise it to keep the " +
              "difficulty climbing for longer.")]
     [SerializeField]
-    private float maxSpeedMultiplier = 3f;
+    private float maxSpeedMultiplier = 3.2f;
 
     /// <summary>Raised when the run reaches a new level.</summary>
     public static event Action<int> LevelChanged;

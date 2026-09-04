@@ -40,10 +40,10 @@ public class SpawnObstacles : MonoBehaviour
     [Header("The gap")]
     [Tooltip("Gap width at level 1, in world units. The astronaut is about 0.8 wide.")]
     [SerializeField]
-    private float gapWidthAtStart = 1.9f;
+    private float gapWidthAtStart = 1.62f;
     [Tooltip("Gap width at full difficulty. Below about 1.05 it stops being passable.")]
     [SerializeField]
-    private float gapWidthAtMax = 1.2f;
+    private float gapWidthAtMax = 1.14f;
     [Tooltip("Space each obstacle needs beside its neighbour, in world units.")]
     [SerializeField]
     private float obstacleSpacing = 0.9f;
@@ -60,7 +60,7 @@ public class SpawnObstacles : MonoBehaviour
     private int maxObstaclesPerRow = 3;
     [Tooltip("Level at which the gap and the row count reach their hardest.")]
     [SerializeField]
-    private int levelAtMaxDensity = 12;
+    private int levelAtMaxDensity = 6;
 
     [Header("Look")]
     [Tooltip("Obstacles spawn at a random angle. Turn off for upright sprites.")]

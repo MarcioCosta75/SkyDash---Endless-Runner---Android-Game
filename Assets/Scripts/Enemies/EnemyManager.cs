@@ -25,7 +25,7 @@ public class EnemyManager : MonoBehaviour
     private int firstBossLevel = 2;
     [Tooltip("Levels between one alien and the next.")]
     [SerializeField]
-    private int levelsBetweenBosses = 2;
+    private int levelsBetweenBosses = 3;
 
     private int wavesSeen;
     private bool alienActive;
