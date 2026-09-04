@@ -279,7 +279,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetSprite: {fileID: 8619999325644399640}
   blinkDuration: 10
-  blinkStartTime: 7
 --- !u!50 &-9149980900204488905
 Rigidbody2D:
   serializedVersion: 4

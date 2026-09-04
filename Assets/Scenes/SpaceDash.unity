@@ -12720,14 +12720,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2003720575}
     - target: {fileID: 3871145421728909487, guid: c12ca985009ea3446b0dfccda764110d, type: 3}
-      propertyPath: isMagnet
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3871145421728909487, guid: c12ca985009ea3446b0dfccda764110d, type: 3}
-      propertyPath: moveSpeed
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 3871145421728909487, guid: c12ca985009ea3446b0dfccda764110d, type: 3}
       propertyPath: buttonLeft
       value: 
       objectReference: {fileID: 1609586148}
@@ -12742,10 +12734,6 @@ PrefabInstance:
     - target: {fileID: 3871145421728909487, guid: c12ca985009ea3446b0dfccda764110d, type: 3}
       propertyPath: magnetDuration
       value: 20
-      objectReference: {fileID: 0}
-    - target: {fileID: 3871145421728909487, guid: c12ca985009ea3446b0dfccda764110d, type: 3}
-      propertyPath: movementDistance
-      value: 0.8
       objectReference: {fileID: 0}
     - target: {fileID: 3871145421728909487, guid: c12ca985009ea3446b0dfccda764110d, type: 3}
       propertyPath: projectilePrefab
@@ -14465,10 +14453,6 @@ PrefabInstance:
       propertyPath: explosionEffectPrefab
       value: 
       objectReference: {fileID: 1329845292236604, guid: 9bba9cf244c53c5439505dfc96fdd11c, type: 3}
-    - target: {fileID: 6445493402278905913, guid: cad7f1c4e3de2b148a3cd02437189edb, type: 3}
-      propertyPath: projectileSharpHitsToDestroy
-      value: 10
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cad7f1c4e3de2b148a3cd02437189edb, type: 3}
 --- !u!4 &1220428740 stripped
@@ -15355,7 +15339,6 @@ MonoBehaviour:
   highscoreText: {fileID: 577760762}
   starCounterText: {fileID: 121231556}
   starTotalCounterText: {fileID: 1684696465}
-  health: {fileID: 1626120356}
   cameraMovement: {fileID: 2009203273}
   levelText: {fileID: 212864949}
   speedText: {fileID: 212133235}
@@ -21137,7 +21120,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   alienEnemy: {fileID: 338798328}
   spawnPoint: {fileID: 1528204240}
-  activationDelay: 45
 --- !u!4 &1396705329
 Transform:
   m_ObjectHideFlags: 0
@@ -22091,9 +22073,7 @@ MonoBehaviour:
   - {fileID: 5135334206666499411, guid: 248b848cb2051f94bb3a6729272bad29, type: 3}
   - {fileID: 2821403392237468193, guid: 2904298b0ea23a548826ea3c09858794, type: 3}
   maxX: 2.4
-  maxY: 3.4
   minX: -2.4
-  minY: -3.4
   minTimeBetweenSpawn: 0.7
   maxTimeBetweenSpawn: 1
 --- !u!4 &1528204242

@@ -126,10 +126,7 @@ MonoBehaviour:
   buttonLeft: {fileID: 0}
   buttonRight: {fileID: 0}
   characterObject: {fileID: 3871145421728909478}
-  isMagnet: 0
   magnetDuration: 20
-  moveSpeed: 5
-  movementDistance: 0.5
   collisionSound: {fileID: 0}
 --- !u!114 &2785091019433843751
 MonoBehaviour:
@@ -143,9 +140,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efb0b416cbbeb3148aa8e69e87c5a292, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 3
   maxHealth: 0
-  numOfHearts: 3
   hearts:
   - {fileID: 0}
   - {fileID: 0}

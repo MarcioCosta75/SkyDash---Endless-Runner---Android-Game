@@ -128,7 +128,6 @@ MonoBehaviour:
   spawnSpeed: 0
   spawnOffsetY: 0
   movementSpeed: 1
-  projectileSharpHitsToDestroy: 3
   activeSound: {fileID: 0}
   explosionEffectPrefab: {fileID: 0}
   destructionSound: {fileID: 0}
