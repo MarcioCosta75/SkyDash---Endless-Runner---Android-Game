@@ -94,6 +94,15 @@ public class GameOver : MonoBehaviour
             scoreManager.StopScoring();
         }
 
+        // The pause button is not inside the group that gets hidden, and the
+        // Android back button is always listening, so pausing has to be shut
+        // off explicitly or the two panels stack.
+        PauseMenu pauseMenu = FindAnyObjectByType<PauseMenu>();
+        if (pauseMenu != null)
+        {
+            pauseMenu.DisablePausing();
+        }
+
         // A root object, so it is not switched off with GameCapsule.
         EnemyManager enemyManager = FindAnyObjectByType<EnemyManager>();
         if (enemyManager != null)

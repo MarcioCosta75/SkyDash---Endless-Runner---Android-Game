@@ -37,6 +37,19 @@ public class SettingsController : MonoBehaviour
         {
             sensitivitySlider.onValueChanged.RemoveListener(OnSliderChanged);
         }
+
+        // The setter deliberately skips the disk write, because it runs on
+        // every frame of a drag. Something has to flush it, or the setting is
+        // lost when the app closes.
+        GameSettings.Save();
+    }
+
+    private void OnApplicationPause(bool paused)
+    {
+        if (paused)
+        {
+            GameSettings.Save();
+        }
     }
 
     private void OnSliderChanged(float value)

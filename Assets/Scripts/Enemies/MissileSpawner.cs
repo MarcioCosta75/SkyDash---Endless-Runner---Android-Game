@@ -264,6 +264,9 @@ public class MissileSpawner : MonoBehaviour
         Rigidbody2D body = missile.GetComponent<Rigidbody2D>();
         if (body != null)
         {
+            // Gravity would add to this and make the configured speed, and the
+            // per-wave ramp, meaningless.
+            body.gravityScale = 0f;
             body.linearVelocity = Vector2.down * currentMissileSpeed;
         }
     }

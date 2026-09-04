@@ -113,7 +113,8 @@ public class GameFeel : MonoBehaviour
         Restart(ref shakeRoutine, Shake());
         Restart(ref flashRoutine, Flash(hurtColour));
 
-        if (playerSprite != null)
+        // graceSeconds is zero on the fatal hit: flash and shake, but no blink.
+        if (playerSprite != null && graceSeconds > 0f)
         {
             Restart(ref blinkRoutine, Blink(graceSeconds));
         }

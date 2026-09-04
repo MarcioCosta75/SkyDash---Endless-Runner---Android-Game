@@ -67,15 +67,19 @@ public class Health : MonoBehaviour
 
         SetHealth(health - amount);
 
-        if (health <= 0)
+        bool fatal = health <= 0;
+
+        // Raised for the fatal hit as well. Skipping it left the one hit that
+        // ends the run with no flash and no camera kick, while every hit the
+        // player survives had both.
+        invulnerableUntil = Time.time + invulnerabilityDuration;
+        Hurt?.Invoke(fatal ? 0f : invulnerabilityDuration);
+
+        if (fatal)
         {
             isDead = true;
             Died?.Invoke();
-            return;
         }
-
-        invulnerableUntil = Time.time + invulnerabilityDuration;
-        Hurt?.Invoke(invulnerabilityDuration);
     }
 
     public void RestoreHealth(int amount = 1)

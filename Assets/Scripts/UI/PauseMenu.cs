@@ -12,6 +12,10 @@ public class PauseMenu : MonoBehaviour
 
     public static bool GameIsPaused { get; private set; }
 
+    /// <summary>False once the run is over, so pausing cannot stack on the
+    /// game over panel and freeze time behind it.</summary>
+    private bool pausingAllowed = true;
+
     private void OnDestroy()
     {
         ResetPauseState();
@@ -31,13 +35,24 @@ public class PauseMenu : MonoBehaviour
         Toggle();
     }
 
+    /// <summary>Called on game over. Also closes the menu if it is open.</summary>
+    public void DisablePausing()
+    {
+        pausingAllowed = false;
+
+        if (GameIsPaused)
+        {
+            Resume();
+        }
+    }
+
     private void Toggle()
     {
         if (GameIsPaused)
         {
             Resume();
         }
-        else
+        else if (pausingAllowed)
         {
             Pause();
         }

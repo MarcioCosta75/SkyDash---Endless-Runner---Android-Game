@@ -5097,7 +5097,7 @@ BoxCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: -0.008226395, y: 0}
@@ -14323,7 +14323,7 @@ PrefabInstance:
     - target: {fileID: 6445493402278905913, guid: cad7f1c4e3de2b148a3cd02437189edb, type: 3}
       propertyPath: hitSound
       value: 
-      objectReference: {fileID: 8300000, guid: 8290a7915f4ccae4695b428355644437, type: 3}
+      objectReference: {fileID: 8300000, guid: 633fe813d1688a34cab199d2cc352958, type: 3}
     - target: {fileID: 6445493402278905913, guid: cad7f1c4e3de2b148a3cd02437189edb, type: 3}
       propertyPath: spawnSpeed
       value: 0.5

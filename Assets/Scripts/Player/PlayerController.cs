@@ -56,9 +56,9 @@ public class PlayerController : MonoBehaviour
 
     private Camera mainCamera;
     private Transform characterTransform;
-    private SpriteRenderer characterRenderer;
     private HoldButton holdLeft;
     private HoldButton holdRight;
+    private float halfBodyWidth;
 
     private float sensitivity = 1f;
     private float magnetTimer;
@@ -94,13 +94,40 @@ public class PlayerController : MonoBehaviour
         }
 
         characterTransform = characterObject.transform;
-        characterRenderer = characterObject.GetComponent<SpriteRenderer>();
+        halfBodyWidth = MeasureHalfBodyWidth();
 
         // Set in the settings scene, stored on the device.
         sensitivity = GameSettings.TouchSensitivity;
 
         holdLeft = EnsureHoldButton(buttonLeft);
         holdRight = EnsureHoldButton(buttonRight);
+    }
+
+    /// <summary>
+    /// Half the width of the astronaut's body, from its colliders.
+    ///
+    /// The sprite's renderer bounds are not usable here: they cover the drawn
+    /// image, which is wider than the body, and they are a world-space box
+    /// that grows as the bank tilt rotates the sprite. Using them held the
+    /// astronaut about 0.4 units clear of each screen edge, by an amount that
+    /// changed while turning.
+    /// </summary>
+    private float MeasureHalfBodyWidth()
+    {
+        float widest = 0f;
+        Collider2D[] colliders = characterObject.GetComponents<Collider2D>();
+
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            // Local extents scaled by the transform, so no rotation is involved.
+            float half = colliders[i] is CircleCollider2D circle
+                ? circle.radius
+                : colliders[i] is BoxCollider2D box ? box.size.x * 0.5f : 0f;
+
+            widest = Mathf.Max(widest, half * Mathf.Abs(characterTransform.localScale.x));
+        }
+
+        return widest;
     }
 
     /// <summary>
@@ -322,9 +349,8 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        float halfWidth = characterRenderer != null ? characterRenderer.bounds.extents.x : 0f;
-        float leftBound = mainCamera.ViewportToWorldPoint(new Vector3(0f, 0f, mainCamera.nearClipPlane)).x + halfWidth;
-        float rightBound = mainCamera.ViewportToWorldPoint(new Vector3(1f, 0f, mainCamera.nearClipPlane)).x - halfWidth;
+        float leftBound = mainCamera.ViewportToWorldPoint(new Vector3(0f, 0f, mainCamera.nearClipPlane)).x + halfBodyWidth;
+        float rightBound = mainCamera.ViewportToWorldPoint(new Vector3(1f, 0f, mainCamera.nearClipPlane)).x - halfBodyWidth;
 
         if (leftBound > rightBound)
         {
