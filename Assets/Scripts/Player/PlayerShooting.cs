@@ -113,11 +113,20 @@ public class PlayerShooting : MonoBehaviour
         }
 
         GameObject projectile = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
+        Vector2 direction = ((Vector2)(target.transform.position - projectile.transform.position)).normalized;
+
+        // The projectile owns its movement. Setting the velocity here as well
+        // made the shot travel at both speeds added together.
+        Projectile shot = projectile.GetComponent<Projectile>();
+        if (shot != null)
+        {
+            shot.Launch(direction, projectileSpeed);
+            return;
+        }
 
         Rigidbody2D body = projectile.GetComponent<Rigidbody2D>();
         if (body != null)
         {
-            Vector2 direction = ((Vector2)(target.transform.position - projectile.transform.position)).normalized;
             body.linearVelocity = direction * projectileSpeed;
         }
     }

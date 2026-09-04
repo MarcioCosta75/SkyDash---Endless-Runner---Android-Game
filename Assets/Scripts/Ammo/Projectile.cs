@@ -3,7 +3,10 @@ using UnityEngine;
 /// <summary>
 /// Homing shot fired by the player. It only reacts to the enemy and to the
 /// play area border, so falling pickups no longer swallow the shot.
+/// Movement goes through the Rigidbody2D alone, so the physics velocity and
+/// the homing cannot fight each other.
 /// </summary>
+[RequireComponent(typeof(Rigidbody2D))]
 public class Projectile : MonoBehaviour
 {
     [Header("Effects")]
@@ -17,8 +20,9 @@ public class Projectile : MonoBehaviour
     private AudioClip destructionSound;
 
     [Header("Flight")]
+    [Tooltip("Speed in world units per second. The shooter can override this.")]
     [SerializeField]
-    private float moveSpeed = 10f;
+    private float moveSpeed = 50f;
     [Tooltip("Seconds between re-aiming at the enemy.")]
     [SerializeField]
     private float directionUpdateDelay = 0.1f;
@@ -28,9 +32,35 @@ public class Projectile : MonoBehaviour
     [SerializeField]
     private int damageAmount = 10;
 
+    private Rigidbody2D body;
     private GameObject alienEnemy;
-    private Vector3 direction;
+    private Vector2 direction;
     private float directionUpdateTimer;
+
+    private void Awake()
+    {
+        body = GetComponent<Rigidbody2D>();
+        direction = transform.up;
+    }
+
+    /// <summary>
+    /// Sets the shot on its way. Called by the shooter right after spawning,
+    /// so speed lives in one place instead of being applied twice.
+    /// </summary>
+    public void Launch(Vector2 startDirection, float speed)
+    {
+        if (startDirection.sqrMagnitude > 0f)
+        {
+            direction = startDirection.normalized;
+        }
+
+        if (speed > 0f)
+        {
+            moveSpeed = speed;
+        }
+
+        ApplyVelocity();
+    }
 
     private void Start()
     {
@@ -44,24 +74,19 @@ public class Projectile : MonoBehaviour
             AudioSource.PlayClipAtPoint(activationSound, transform.position);
         }
 
-        direction = transform.up;
         UpdateProjectileDirection();
-
         Destroy(gameObject, lifetime);
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
-        directionUpdateTimer -= Time.deltaTime;
+        directionUpdateTimer -= Time.fixedDeltaTime;
 
         if (directionUpdateTimer <= 0f)
         {
-            UpdateProjectileDirection();
             directionUpdateTimer = directionUpdateDelay;
+            UpdateProjectileDirection();
         }
-
-        // World space, so a rotated sprite cannot bend the flight path.
-        transform.position += direction * (moveSpeed * Time.deltaTime);
     }
 
     private void UpdateProjectileDirection()
@@ -73,7 +98,17 @@ public class Projectile : MonoBehaviour
 
         if (alienEnemy != null && alienEnemy.activeInHierarchy)
         {
-            direction = (alienEnemy.transform.position - transform.position).normalized;
+            direction = ((Vector2)(alienEnemy.transform.position - transform.position)).normalized;
+        }
+
+        ApplyVelocity();
+    }
+
+    private void ApplyVelocity()
+    {
+        if (body != null)
+        {
+            body.linearVelocity = direction * moveSpeed;
         }
     }
 
