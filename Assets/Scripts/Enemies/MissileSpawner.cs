@@ -50,9 +50,6 @@ public class MissileSpawner : MonoBehaviour
     private float exitDuration = 1f;
 
     [Header("Wave scaling")]
-    [Tooltip("Extra hit points added per wave after the first.")]
-    [SerializeField]
-    private float healthPerWave = 20f;
     [Tooltip("Extra sideways speed added per wave.")]
     [SerializeField]
     private float speedPerWave = 0.35f;
@@ -92,6 +89,7 @@ public class MissileSpawner : MonoBehaviour
     private float currentMovementSpeed;
     private float currentMissileSpeed;
     private float currentInterval;
+    private bool waveApplied;
     private bool firing;
 
     private void Awake()
@@ -101,7 +99,6 @@ public class MissileSpawner : MonoBehaviour
         mainCamera = Camera.main;
 
         RememberFightingPosition();
-        ApplyWave(1);
     }
 
     /// <summary>
@@ -126,6 +123,7 @@ public class MissileSpawner : MonoBehaviour
     private void ApplyWave(int waveNumber)
     {
         wave = waveNumber;
+        waveApplied = true;
         int extra = wave - 1;
 
         currentMovementSpeed = movementSpeed + speedPerWave * extra;
@@ -134,15 +132,16 @@ public class MissileSpawner : MonoBehaviour
                                     spawnInterval * Mathf.Pow(intervalFactorPerWave, extra));
     }
 
-    /// <summary>Hit points for this wave, read by EnemyHealth.</summary>
-    public int HealthForWave(int baseHealth)
-    {
-        return baseHealth + Mathf.RoundToInt(healthPerWave * (wave - 1));
-    }
-
     private void OnEnable()
     {
         RememberFightingPosition();
+
+        // If nothing configured a wave, fall back to the first one rather
+        // than firing with uninitialised speeds.
+        if (!waveApplied)
+        {
+            ApplyWave(1);
+        }
 
         if (health != null)
         {

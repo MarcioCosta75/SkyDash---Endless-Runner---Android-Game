@@ -66,7 +66,6 @@ public class ScoreManager : MonoBehaviour
     private float bestBeforeRun;
 
     public int Level => currentLevel;
-    public float Score => score;
 
     private void Start()
     {

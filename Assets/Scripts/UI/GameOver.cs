@@ -58,12 +58,6 @@ public class GameOver : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    public void MainMenu()
-    {
-        ResumeTime();
-        SceneManager.LoadScene(SceneNames.Menu);
-    }
-
     private static void ResumeTime()
     {
         Time.timeScale = 1f;

@@ -12,9 +12,4 @@ public class SceneLoadManager : MonoBehaviour
         PauseMenu.ResetPauseState();
         SceneManager.LoadScene(sceneIndex);
     }
-
-    public void QuitGame()
-    {
-        Application.Quit();
-    }
 }

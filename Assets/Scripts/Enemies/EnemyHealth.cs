@@ -8,6 +8,9 @@ public class EnemyHealth : MonoBehaviour
     [Tooltip("Hit points on the first wave. Later waves add more.")]
     [SerializeField]
     private int maxHealth = 100;
+    [Tooltip("Extra hit points added per wave after the first.")]
+    [SerializeField]
+    private float healthPerWave = 20f;
     [SerializeField]
     private Slider healthSlider;
 
@@ -59,11 +62,8 @@ public class EnemyHealth : MonoBehaviour
     /// </summary>
     public void ConfigureForWave(int waveNumber)
     {
-        MissileSpawner spawner = GetComponent<MissileSpawner>();
-        waveHealth = spawner != null
-            ? spawner.HealthForWave(maxHealth)
-            : maxHealth;
-
+        int extra = Mathf.Max(0, waveNumber - 1);
+        waveHealth = maxHealth + Mathf.RoundToInt(healthPerWave * extra);
         ResetHealth();
     }
 

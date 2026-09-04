@@ -85,18 +85,16 @@ public class EnemyManager : MonoBehaviour
     {
         wavesSeen++;
 
-        // The spawner first: EnemyHealth asks it how many hit points this wave
-        // should have, so it has to know the wave number by then.
-        MissileSpawner spawner = alienEnemy.GetComponent<MissileSpawner>();
-        if (spawner != null)
-        {
-            spawner.ConfigureForWave(wavesSeen);
-        }
-
         EnemyHealth health = alienEnemy.GetComponent<EnemyHealth>();
         if (health != null)
         {
             health.ConfigureForWave(wavesSeen);
+        }
+
+        MissileSpawner spawner = alienEnemy.GetComponent<MissileSpawner>();
+        if (spawner != null)
+        {
+            spawner.ConfigureForWave(wavesSeen);
         }
 
         alienActive = true;

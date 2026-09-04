@@ -28,9 +28,6 @@ public class Health : MonoBehaviour
     /// <summary>Raised once, when health reaches zero.</summary>
     public event Action Died;
 
-    /// <summary>Raised whenever the current value changes.</summary>
-    public event Action<int, int> Changed;
-
     /// <summary>Raised when a hit lands, with the seconds of grace that follow.</summary>
     public event Action<float> Hurt;
 
@@ -41,8 +38,6 @@ public class Health : MonoBehaviour
     private bool isDead;
     private float invulnerableUntil;
 
-    public int Current => health;
-    public int Max => maxHealth;
     public bool IsInvulnerable => Time.time < invulnerableUntil;
 
     private void Awake()
@@ -103,7 +98,6 @@ public class Health : MonoBehaviour
 
         health = clamped;
         RefreshHearts();
-        Changed?.Invoke(health, maxHealth);
     }
 
     private void RefreshHearts()

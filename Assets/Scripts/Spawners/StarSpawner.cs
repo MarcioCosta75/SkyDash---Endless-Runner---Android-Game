@@ -9,21 +9,18 @@ public class StarSpawner : FallingItemSpawner
     [SerializeField]
     private AudioClip collectSound;
 
-    private AudioSource audioSource;
-
-    protected override void Start()
-    {
-        audioSource = GetComponent<AudioSource>();
-        base.Start();
-    }
-
     protected override GameObject GetItemPrefab() => starPrefab;
 
     public void PlayCollectSound()
     {
-        if (audioSource != null && collectSound != null)
+        // Played at a point rather than through a source on this object: this
+        // spawner is switched off at game over, and a disabled AudioSource
+        // cannot play, so the last star collected would be silent.
+        if (collectSound != null)
         {
-            audioSource.PlayOneShot(collectSound);
+            AudioSource.PlayClipAtPoint(collectSound, Camera.main != null
+                ? Camera.main.transform.position
+                : transform.position);
         }
     }
 }

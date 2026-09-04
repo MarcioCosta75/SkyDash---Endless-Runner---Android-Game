@@ -14,7 +14,6 @@ GameObject:
   - component: {fileID: -21290844304464511}
   - component: {fileID: 4218124985035143679}
   - component: {fileID: 5486161963674065025}
-  - component: {fileID: 8390981067577272398}
   m_Layer: 0
   m_Name: Star
   m_TagString: Star
@@ -164,15 +163,3 @@ Animation:
   m_PlayAutomatically: 1
   m_AnimatePhysics: 1
   m_CullingType: 0
---- !u!122 &8390981067577272398
-Halo:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3920117105749382791}
-  m_Enabled: 1
-  m_Color:
-    serializedVersion: 2
-    rgba: 4282238207
-  m_Size: 0.25

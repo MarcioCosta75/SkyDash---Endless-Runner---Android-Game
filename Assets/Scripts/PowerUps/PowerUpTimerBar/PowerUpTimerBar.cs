@@ -33,10 +33,16 @@ public abstract class PowerUpTimerBar : MonoBehaviour
 
     private void OnDisable()
     {
-        // Disabling this object stops the countdown coroutine, which would
-        // otherwise leave the holder switched on. The holder is a child of the
-        // Canvas, so it stays visible even when this object is gone.
-        countdown = null;
+        // Deactivating the GameObject stops the coroutine on its own, but
+        // disabling only this component does not, so stop it explicitly.
+        // Either way the holder has to be hidden here: it is a child of the
+        // Canvas, so it stays visible when this object goes away.
+        if (countdown != null)
+        {
+            StopCoroutine(countdown);
+            countdown = null;
+        }
+
         ResetBar();
     }
 
