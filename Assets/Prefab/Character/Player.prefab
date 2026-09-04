@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: 3489011704812425592}
   - component: {fileID: 7845347766110702077}
   - component: {fileID: 1311124274}
+  - component: {fileID: 1332265507}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -252,3 +253,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   amplitude: 0.055
   period: 1
+--- !u!114 &1332265507
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3871145421728909478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2bc5f543a9f4417191ad4de731b69c90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  breathAmount: 0.03
+  breathPeriod: 1.6
+  bounceScale: 1.22
+  bounceSeconds: 0.22
+  hitSquash: 0.3
+  hitSeconds: 0.3
+  deathSpin: 540
+  deathSeconds: 1.1

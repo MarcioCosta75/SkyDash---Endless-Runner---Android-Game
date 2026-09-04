@@ -4748,7 +4748,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: b55aea4711335594797d227b66d1dc03, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 7af8d01eec584ade8b132cbf0cddfa1a, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4824,7 +4824,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: b55aea4711335594797d227b66d1dc03, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 7af8d01eec584ade8b132cbf0cddfa1a, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -5197,7 +5197,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: b55aea4711335594797d227b66d1dc03, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 7af8d01eec584ade8b132cbf0cddfa1a, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -12489,7 +12489,7 @@ PrefabInstance:
     - target: {fileID: 2785091019433843751, guid: c12ca985009ea3446b0dfccda764110d, type: 3}
       propertyPath: fullHeart
       value: 
-      objectReference: {fileID: 21300000, guid: b55aea4711335594797d227b66d1dc03, type: 3}
+      objectReference: {fileID: 21300000, guid: 7af8d01eec584ade8b132cbf0cddfa1a, type: 3}
     - target: {fileID: 2785091019433843751, guid: c12ca985009ea3446b0dfccda764110d, type: 3}
       propertyPath: maxHealth
       value: 3
@@ -12497,7 +12497,7 @@ PrefabInstance:
     - target: {fileID: 2785091019433843751, guid: c12ca985009ea3446b0dfccda764110d, type: 3}
       propertyPath: emptyHeart
       value: 
-      objectReference: {fileID: 21300000, guid: 42c7dee46d7d4bc4bb773029b9d2ecbd, type: 3}
+      objectReference: {fileID: 21300000, guid: ed898f32e365490b9eb667a4b26e019b, type: 3}
     - target: {fileID: 2785091019433843751, guid: c12ca985009ea3446b0dfccda764110d, type: 3}
       propertyPath: hearts.Array.data[0]
       value: 
@@ -22877,7 +22877,7 @@ MonoBehaviour:
   starPrefab: {fileID: 3920117105749382791, guid: 44fb5cbea36a3a34e86cad02013309e6, type: 3}
   spawnInterval: 5
   fallSpeed: 2
-  collectSound: {fileID: 8300000, guid: 0ec2423d090ba1c40a42e728e5ee5760, type: 3}
+  collectSound: {fileID: 8300000, guid: 40e50908862548cf9dcf4e23a8cb50f5, type: 3}
 --- !u!4 &1607737981
 Transform:
   m_ObjectHideFlags: 0
@@ -22903,7 +22903,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 0ec2423d090ba1c40a42e728e5ee5760, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 40e50908862548cf9dcf4e23a8cb50f5, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 0.25
   m_Pitch: 1
